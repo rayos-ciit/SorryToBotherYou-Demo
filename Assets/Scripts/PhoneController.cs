@@ -5,18 +5,23 @@ public class PhoneController : MonoBehaviour
 {
     [Header("Connections")]
     public GameManager gameManager;
-    public AudioSource phoneAudioSource;
+    public AudioSource phoneAudioSource; // For the ringing
+    public AudioSource voiceAudioSource; // For the voice/beeps when picked up
     
     [Header("Hold Music")]
     public AudioClip holdMusicClip;
+
+    [Header("Corporate Rules")]
+    [Tooltip("How many seconds the player has to resolve a call before the Boss gives a strike.")]
+    public float slaTimeLimit = 12.0f; 
 
     // State tracking
     private bool isRinging = false;
     private bool isOffHook = false;
     private bool isOnHold = false;
     private CallerData currentCaller;
+    private Coroutine slaRoutine;
 
-    // This is called by the GameManager when a new call is pulled from the deck
     public void StartRinging(CallerData caller)
     {
         currentCaller = caller;
@@ -24,7 +29,18 @@ public class PhoneController : MonoBehaviour
         isOffHook = false;
         isOnHold = false;
 
-        // Play the specific ring or distortion for this caller
+        // Visual Sabotage: The "False Positive" Caller ID
+        if (caller.canMaskCallerID && Random.value > 0.5f)
+        {
+            Debug.Log("UI Sabotage: Caller ID reads UNKNOWN - UNKNOWN");
+            // TODO: Tell your UI script to display "UNKNOWN"
+        }
+        else
+        {
+            Debug.Log($"Caller ID reads: {caller.callerName} - {caller.callerNumber}");
+            // TODO: Tell your UI script to display normal details
+        }
+
         if (caller.ringSFX != null)
         {
             phoneAudioSource.clip = caller.ringSFX;
@@ -32,106 +48,149 @@ public class PhoneController : MonoBehaviour
             phoneAudioSource.Play();
         }
 
-        Debug.Log("Phone is now ringing...");
+        // Start the SLA Timer! (Shorter if it's The Impatient)
+        float timer = caller.requiresQuickResponse ? caller.timeLimitToRespond : slaTimeLimit;
+        slaRoutine = StartCoroutine(SLATimerRoutine(timer));
     }
 
-    // Tied to the physical "Receiver" being clicked
+    private IEnumerator SLATimerRoutine(float timeLimit)
+    {
+        yield return new WaitForSeconds(timeLimit);
+
+        // If the timer runs out and the call hasn't been resolved...
+        if (isRinging || isOffHook) 
+        {
+            Debug.Log("SLA TIMER EXPIRED!");
+            phoneAudioSource.Stop();
+            voiceAudioSource.Stop();
+            
+            // Winning Condition for The Disturbance: Doing nothing until the timer ends!
+            if (currentCaller.requiredAction == CorrectAction.Ignore && !isOffHook)
+            {
+                Debug.Log("Success: The Disturbance gave up and left.");
+                isRinging = false;
+                gameManager.HandleCallResult(true);
+            }
+            else
+            {
+                // Taking too long on anyone else earns a strike
+                Debug.Log("Boss: You took too long to handle that call!");
+                isRinging = false;
+                isOffHook = false;
+                gameManager.HandleCallResult(false);
+            }
+        }
+    }
+
     public void PickUpPhone()
     {
-        if (!isRinging) return; // Can't pick up a phone that isn't ringing!
+        if (!isRinging) return;
 
         isRinging = false;
         isOffHook = true;
         phoneAudioSource.Stop(); 
 
-        Debug.Log("Player picked up the receiver.");
+        Debug.Log("Picked up the receiver.");
 
-        // INSTANT FAIL CHECK: Did they pick up The Disturbance?
+        // INSTANT FAIL: Picking up The Disturbance
         if (currentCaller.requiredAction == CorrectAction.Ignore)
         {
-            Debug.Log("Lethal sensory overload triggered!");
+            if(slaRoutine != null) StopCoroutine(slaRoutine);
+            Debug.Log("Lethal sensory overload triggered! You picked up The Disturbance.");
             gameManager.HandleCallResult(false);
             return;
         }
 
-        // TODO: Trigger the Impatient timer check here if requiresQuickResponse is true
+        // Audio Subtlety: Play the voice/breathing so the player can investigate
+        if (currentCaller.voiceSFX != null)
+        {
+            voiceAudioSource.clip = currentCaller.voiceSFX;
+            voiceAudioSource.loop = true;
+            voiceAudioSource.Play();
+        }
+        
+        // Note: The SLA Timer keeps ticking in the background! They must act fast.
     }
 
-    // Tied to the "Talk" UI button
     public void PressTalk()
     {
         if (!isOffHook || isOnHold) return;
-
-        Debug.Log("Player chose to Talk.");
+        
+        StopCallAudioAndTimer();
+        Debug.Log("Chose to Talk.");
 
         if (currentCaller.requiredAction == CorrectAction.Talk)
         {
-            // TODO: Pass currentCaller.dialogueLines to the UI text box system
-            Debug.Log("Initiating dialogue...");
+            Debug.Log("Initiating standard dialogue...");
             gameManager.HandleCallResult(true); 
         }
         else
         {
-            // E.g., Talking to The Listener or The Mimic
+            Debug.Log("You talked to the wrong entity...");
             gameManager.HandleCallResult(false);
         }
     }
 
-    // Tied to the "Hold" UI button
     public void PressHold()
     {
         if (!isOffHook) return;
-
+        
+        StopCallAudioAndTimer();
         isOnHold = true;
         phoneAudioSource.clip = holdMusicClip;
         phoneAudioSource.loop = true;
         phoneAudioSource.Play();
 
-        Debug.Log("Player put the caller on Hold.");
+        Debug.Log("Put the caller on Hold.");
 
         if (currentCaller.requiredAction == CorrectAction.Hold)
         {
-            // For The Listener: We wait a few seconds, then they hang up
             StartCoroutine(WaitToResolveHold());
         }
         else
         {
-            // Putting anyone else on hold (like The Impatient) is a strike
             gameManager.HandleCallResult(false);
         }
     }
 
-    // Tied to the "Hang Up / Put Down" UI button
     public void HangUpPhone()
     {
         if (!isOffHook) return;
-
+        
+        StopCallAudioAndTimer();
         isOffHook = false;
         isOnHold = false;
-        phoneAudioSource.Stop();
 
-        Debug.Log("Player hung up the phone.");
+        Debug.Log("Hung up the phone.");
 
+        // This is where the player successfully defeats The Mimic!
         if (currentCaller.requiredAction == CorrectAction.HangUp)
         {
+            Debug.Log("Correctly slammed the phone down on the entity!");
             gameManager.HandleCallResult(true);
         }
         else
         {
+            Debug.Log("Hung up on a normal client! Strike earned.");
             gameManager.HandleCallResult(false);
         }
     }
 
-    // Handles the agonizing wait for The Listener to leave while on hold
+    private void StopCallAudioAndTimer()
+    {
+        if(slaRoutine != null) StopCoroutine(slaRoutine);
+        voiceAudioSource.Stop();
+        phoneAudioSource.Stop();
+    }
+
     private IEnumerator WaitToResolveHold()
     {
         Debug.Log("Waiting for the entity to leave the line...");
-        yield return new WaitForSeconds(Random.Range(3f, 7f)); // Random wait time
+        yield return new WaitForSeconds(Random.Range(3f, 7f));
         
         Debug.Log("Click. The entity hung up.");
         phoneAudioSource.Stop();
         isOnHold = false;
-        
         gameManager.HandleCallResult(true);
     }
 }
