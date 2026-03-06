@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -136,13 +137,18 @@ public class GameManager : MonoBehaviour
     {
         StopCoroutine(shiftRoutine);
         Debug.Log("GAME OVER: The Boss is here.");
-        // TODO: Trigger Demonic Boss Jumpscare and restart scene
+        
+        // Muffle all audio, turn on the scary UI screen
+        FindObjectOfType<RulebookController>().ambientAudioSource.Stop(); 
+        uiManager.ShowGameOver();
     }
 
     private void EndShift()
     {
         Debug.Log($"Shift Complete! You survived Day {currentDay}.");
-        // TODO: Show end of shift screen, increment currentDay, and prep Day 2
+        uiManager.ShowShiftComplete(currentDay);
+        
+        // Wait for player to click "Next Day" to continue
     }
 
     private void UpdateInGameClock()
@@ -161,5 +167,20 @@ public class GameManager : MonoBehaviour
         bool result = !isCallActive;
         isCallActive = true; // Reset for the next call
         return result;
+    }
+    
+    // Hook this up to a "Restart" button on your Game Over screen
+    public void RestartGame()
+    {
+        // Reloads the current active scene to start completely fresh
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    
+    // Hook this up to a "Continue" button on your Shift Complete screen
+    public void StartNextDay()
+    {
+        currentDay++;
+        if (uiManager.shiftCompleteScreen != null) uiManager.shiftCompleteScreen.SetActive(false);
+        StartShift();
     }
 }

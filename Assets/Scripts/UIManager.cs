@@ -19,7 +19,12 @@ public class UIManager : MonoBehaviour
 
     [Header("Corporate Strikes")]
     [Tooltip("Drag your Strike UI GameObjects (e.g., pink slips) into this array in order.")]
-    public GameObject[] strikeVisuals; 
+    public GameObject[] strikeVisuals;
+    
+    [Header("Game Loop Screens")]
+    public GameObject gameOverScreen;
+    public GameObject shiftCompleteScreen;
+    public TMP_Text shiftCompleteText;
 
     void Start()
     {
@@ -64,5 +69,16 @@ public class UIManager : MonoBehaviour
             else
                 strikeVisuals[i].SetActive(false);
         }
+    }
+    
+    public void ShowGameOver()
+    {
+        if (gameOverScreen != null) gameOverScreen.SetActive(true);
+    }
+
+    public void ShowShiftComplete(int dayCompleted)
+    {
+        if (shiftCompleteScreen != null) shiftCompleteScreen.SetActive(true);
+        if (shiftCompleteText != null) shiftCompleteText.text = $"DAY {dayCompleted} COMPLETE.\nPRESS TO CONTINUE.";
     }
 }

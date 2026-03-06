@@ -10,15 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a1708d0f7b0ebdb41a044c506c914073, type: 3}
-  m_Name: NewCaller
+  m_Name: NoName_Disturbance
   m_EditorClassIdentifier: Assembly-CSharp::CallerData
-  callerName: Normal Client
-  callerNumber: 000-0000
-  typeOfCaller: 0
-  spawnWeight: 5
-  requiredAction: 0
+  callerName: theonlywayoutisdeaththeonlywayoutisdeaththeonlywayoutisdeath
+  callerNumber: pickthephoneuppleasepickthephoneupplease
+  canMaskCallerID: 0
+  typeOfCaller: 5
+  spawnWeight: 2
+  requiredAction: 4
   requiresQuickResponse: 0
   timeLimitToRespond: 5
   ringSFX: {fileID: 0}
+  voiceSFX: {fileID: 0}
   causesScreenFlicker: 0
   dialogueLines: []
