@@ -8,6 +8,7 @@ public class PhoneController : MonoBehaviour
     public UIManager uiManager;
     public AudioSource phoneAudioSource; // For the ringing
     public AudioSource voiceAudioSource; // For the voice/beeps when picked up
+    public DialogueSystem dialogueSystem;
     
     [Header("Hold Music")]
     public AudioClip holdMusicClip;
@@ -124,7 +125,16 @@ public class PhoneController : MonoBehaviour
         if (currentCaller.requiredAction == CorrectAction.Talk)
         {
             Debug.Log("Initiating standard dialogue...");
-            gameManager.HandleCallResult(true); 
+            // If the dialogue box isn't active yet, start it. If it is, advance the text.
+            if (!dialogueSystem.dialogueBoxUI.activeInHierarchy)
+            {
+                dialogueSystem.StartDialogue(currentCaller);
+            }
+            else
+            {
+                dialogueSystem.DisplayNextLine();
+            }
+               
         }
         else
         {
@@ -181,6 +191,7 @@ public class PhoneController : MonoBehaviour
 
     private void StopCallAudioAndTimer()
     {
+        dialogueSystem.StopDialogue();
         if(slaRoutine != null) StopCoroutine(slaRoutine);
         voiceAudioSource.Stop();
         phoneAudioSource.Stop();
