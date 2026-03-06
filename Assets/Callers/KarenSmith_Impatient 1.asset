@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a1708d0f7b0ebdb41a044c506c914073, type: 3}
-  m_Name: KarenSmith_Impatient
+  m_Name: KarenSmith_Impatient 1
   m_EditorClassIdentifier: Assembly-CSharp::CallerData
   callerName: Karen Smith
   callerNumber: 555-8821
