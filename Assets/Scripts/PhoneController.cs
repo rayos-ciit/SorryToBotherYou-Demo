@@ -5,6 +5,7 @@ public class PhoneController : MonoBehaviour
 {
     [Header("Connections")]
     public GameManager gameManager;
+    public UIManager uiManager;
     public AudioSource phoneAudioSource; // For the ringing
     public AudioSource voiceAudioSource; // For the voice/beeps when picked up
     
@@ -33,12 +34,12 @@ public class PhoneController : MonoBehaviour
         if (caller.canMaskCallerID && Random.value > 0.5f)
         {
             Debug.Log("UI Sabotage: Caller ID reads UNKNOWN - UNKNOWN");
-            // TODO: Tell your UI script to display "UNKNOWN"
+            uiManager.UpdateCallerID("UNKNOWN", "UNKNOWN");
         }
         else
         {
             Debug.Log($"Caller ID reads: {caller.callerName} - {caller.callerNumber}");
-            // TODO: Tell your UI script to display normal details
+            uiManager.UpdateCallerID(caller.callerName, caller.callerNumber);
         }
 
         if (caller.ringSFX != null)
@@ -79,7 +80,8 @@ public class PhoneController : MonoBehaviour
                 isOffHook = false;
                 gameManager.HandleCallResult(false);
             }
-        }
+        } 
+        uiManager.ClearCallerID();
     }
 
     public void PickUpPhone()
@@ -174,6 +176,7 @@ public class PhoneController : MonoBehaviour
             Debug.Log("Hung up on a normal client! Strike earned.");
             gameManager.HandleCallResult(false);
         }
+        uiManager.ClearCallerID();
     }
 
     private void StopCallAudioAndTimer()

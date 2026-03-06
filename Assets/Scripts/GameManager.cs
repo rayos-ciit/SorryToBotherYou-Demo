@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    [Header("Connections")]
+    public UIManager uiManager;
+    
     [Header("Shift Settings")]
     public int currentDay = 1;
     public int minCallsPerDay = 5;
@@ -111,6 +114,7 @@ public class GameManager : MonoBehaviour
         if (!handledCorrectly)
         {
             currentStrikes++;
+            uiManager.UpdateStrikes(currentStrikes);
             Debug.Log($"STRIKE! Current Strikes: {currentStrikes} / {maxStrikesAllowed}");
 
             if (currentStrikes >= maxStrikesAllowed)
@@ -146,7 +150,7 @@ public class GameManager : MonoBehaviour
         // Calculate how far along we are (e.g., 50% through the quota = 3:00 AM)
         float shiftProgress = (float)callsCompletedToday / totalCallsToday;
         Debug.Log($"Shift is {shiftProgress * 100}% complete. Update UI Clock!");
-        // TODO: Send shiftProgress to the UI manager to move the clock hands
+        uiManager.UpdateClock(shiftProgress);
     }
 
     // --- Temporary Variables to handle pausing the coroutine ---
