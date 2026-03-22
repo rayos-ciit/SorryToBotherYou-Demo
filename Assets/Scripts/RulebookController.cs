@@ -7,6 +7,11 @@ public class RulebookController : MonoBehaviour
     
     [Tooltip("Drag all of your rulebook page UI Panels here IN ORDER.")]
     public GameObject[] pages;
+    
+    [Header("Tactile UI Sounds")]
+    public AudioSource uiFoleySource;
+    public AudioClip bookOpenClip;
+    public AudioClip pageFlipClip;
 
     [Header("Audio Muffling Sabotage")]
     public AudioSource ambientAudioSource;
@@ -35,6 +40,10 @@ public class RulebookController : MonoBehaviour
         {
             // Always open to the first page
             currentPageIndex = 0;
+            if (uiFoleySource != null && bookOpenClip != null) 
+            {
+                uiFoleySource.PlayOneShot(bookOpenClip);
+            }
             UpdatePageVisibility();
             
             if (ambientAudioSource != null) ambientAudioSource.volume = originalAmbientVol * muffledVolumeLevel;
@@ -54,6 +63,7 @@ public class RulebookController : MonoBehaviour
         {
             currentPageIndex++;
             UpdatePageVisibility();
+            if (uiFoleySource != null && pageFlipClip != null) uiFoleySource.PlayOneShot(pageFlipClip);
         }
     }
 
@@ -64,6 +74,7 @@ public class RulebookController : MonoBehaviour
         {
             currentPageIndex--;
             UpdatePageVisibility();
+            if (uiFoleySource != null && pageFlipClip != null) uiFoleySource.PlayOneShot(pageFlipClip);
         }
     }
 

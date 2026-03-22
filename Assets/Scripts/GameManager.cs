@@ -137,6 +137,7 @@ public class GameManager : MonoBehaviour
         // Mark the call as resolved so the ShiftRoutine can continue
         isCallActive = false; 
         if (computerController != null) computerController.ResetMonitor();
+        if (uiManager != null) uiManager.ClearCallerID();
     }
 
     private void TriggerGameOver()

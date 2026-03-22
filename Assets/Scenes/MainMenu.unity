@@ -3254,6 +3254,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuController
   levelLoader: {fileID: 650515604}
   mainMixer: {fileID: 24100000, guid: a5908a25fbbc48d42a0aa809268ac31e, type: 2}
+  volumeSlider: {fileID: 1679489136}
   gameSceneName: MainGame
   mainPanel: {fileID: 281303434}
   optionsPanel: {fileID: 1704136477}

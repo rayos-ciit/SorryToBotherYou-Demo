@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Audio;
+using UnityEngine.UI; // Needed to talk to the Slider!
 
 public class MainMenuController : MonoBehaviour
 {
@@ -9,40 +10,41 @@ public class MainMenuController : MonoBehaviour
     
     [Header("Audio Settings")]
     public AudioMixer mainMixer;
+    public Slider volumeSlider; // Drag your slider here in the inspector
     
     [Header("Scene Management")]
     [Tooltip("The exact name of your gameplay scene in the Build Settings.")]
     public string gameSceneName = "SampleScene"; 
 
     [Header("Menu Panels")]
-    [Tooltip("Drag the Main Menu buttons panel here.")]
     public GameObject mainPanel;
-    [Tooltip("Drag the Options panel here.")]
     public GameObject optionsPanel;
-    [Tooltip("Drag the How To Play panel here.")]
     public GameObject howToPlayPanel;
 
     void Start()
     {
-        // Ensure only the main buttons are showing when the game boots up
+        // 1. Load the saved volume (or default to 0.75 if it's their first time playing)
+        float savedVol = PlayerPrefs.GetFloat("MasterVolume", 0.75f);
+        
+        // 2. Set the physical UI slider to match the saved number
+        if (volumeSlider != null) volumeSlider.value = savedVol;
+        
+        // 3. Actually apply the math to the Audio Engine
+        SetVolume(savedVol);
+
         ShowMainPanel();
     }
 
-    // --- GAME LOOP BUTTONS ---
     public void StartGame()
     {
-        Debug.Log("Starting Shift with transition...");
-        // Tell the LevelLoader to do its thing instead of instantly loading!
         levelLoader.LoadSceneWithFade(gameSceneName); 
     }
+
     public void QuitGame()
     {
-        Debug.Log("Quitting Game...");
         Application.Quit();
     }
 
-    // --- NAVIGATION BUTTONS ---
-    
     public void ShowOptions()
     {
         mainPanel.SetActive(false);
@@ -57,7 +59,6 @@ public class MainMenuController : MonoBehaviour
         howToPlayPanel.SetActive(true);
     }
 
-    // Call this from the "Back" buttons inside the Options and How To Play menus
     public void ShowMainPanel()
     {
         mainPanel.SetActive(true);
@@ -65,10 +66,13 @@ public class MainMenuController : MonoBehaviour
         howToPlayPanel.SetActive(false);
     }
     
-    // Called dynamically by the UI Slider
     public void SetVolume(float sliderValue)
     {
-        // Converts the 0-1 slider value into a -80dB to 0dB logarithmic scale
+        // Apply the volume to the mixer
         mainMixer.SetFloat("MasterVolume", Mathf.Log10(sliderValue) * 20);
+        
+        // Save the setting permanently to the player's hard drive!
+        PlayerPrefs.SetFloat("MasterVolume", sliderValue);
+        PlayerPrefs.Save();
     }
 }

@@ -6,15 +6,19 @@ public class UIManager : MonoBehaviour
 {
     private Coroutine scrambleRoutine;
     
+    
+    
+    [Header("Mimic Sabotage")]
+    [Tooltip("How many seconds the Caller ID scrambles before revealing the true text.")]
+    public float scrambleDuration = 1.2f;
+    
     [Header("Caller ID Screen")]
     public TMP_Text callerNameText;
     public TMP_Text callerNumberText;
     public string defaultIdleText = "SYSTEM IDLE...";
 
     [Header("Shift Clock")]
-    public RectTransform clockHand;
-    public float startRotationZ = 0f;   
-    public float endRotationZ = -180f;  
+    public TMP_Text digitalClockText;
     
     [Header("Blackout Strike Effect")]
     public AudioSource strikeAudioSource; // The Death Bell
@@ -23,6 +27,13 @@ public class UIManager : MonoBehaviour
     public float blinkSpeed = 5f;
     [Tooltip("How many times the screen flashes black per strike.")]
     public int blinkCount = 2;
+    
+    [Header("Victory Sequence")]
+    public AudioSource victoryAlarmAudio;
+    
+    [Header("Game Over Jumpscare")]
+    public AudioSource jumpscareAudio;
+    public GameObject bossFaceImage; // The terrifying pop-up
 
     [Header("Game Loop Screens")]
     public GameObject gameOverScreen;
@@ -52,10 +63,21 @@ public class UIManager : MonoBehaviour
 
     public void UpdateClock(float shiftPercentage)
     {
-        if (clockHand != null)
+        if (digitalClockText != null)
         {
-            float currentRot = Mathf.Lerp(startRotationZ, endRotationZ, shiftPercentage);
-            clockHand.localEulerAngles = new Vector3(0, 0, currentRot);
+            // A full shift is 6 hours long (from 12:00 AM to 6:00 AM)
+            // 6 hours = 360 in-game minutes
+            float totalMinutesPassed = shiftPercentage * 360f;
+            
+            // Figure out how many hours and minutes have passed
+            int hours = Mathf.FloorToInt(totalMinutesPassed / 60f);
+            int minutes = Mathf.FloorToInt(totalMinutesPassed % 60f);
+
+            // Standard 12-hour format: If 0 hours have passed, it is 12:XX AM
+            int displayHours = (hours == 0) ? 12 : hours;
+            
+            // The "00" format ensures minutes always show two digits (e.g., 12:05 instead of 12:5)
+            digitalClockText.text = string.Format("{0}:{1:00} AM", displayHours, minutes);
         }
     }
 
@@ -99,19 +121,73 @@ public class UIManager : MonoBehaviour
     
     public void ShowGameOver()
     {
+        StartCoroutine(JumpscareRoutine());
+    }
+
+    private IEnumerator JumpscareRoutine()
+    {
+        // 1. Instantly snap to pitch black so the player is disoriented
+        if (blackoutImage != null)
+        {
+            blackoutImage.gameObject.SetActive(true);
+            Color c = blackoutImage.color;
+            c.a = 1f; // Instantly 100% visible (pitch black)
+            blackoutImage.color = c;
+        }
+
+        // Wait a tiny fraction of a second in the dark to build pure dread
+        yield return new WaitForSeconds(0.25f);
+
+        // 2. BOOM! Play the terrifying scream and flash the Boss face
+        if (jumpscareAudio != null) jumpscareAudio.Play();
+        if (bossFaceImage != null) bossFaceImage.SetActive(true);
+
+        // 3. Keep the face on screen for the scariest 2 seconds of their life
+        yield return new WaitForSeconds(2.0f);
+
+        // 4. Hide the face, and fade into the standard Game Over menu so they can restart
+        if (bossFaceImage != null) bossFaceImage.SetActive(false);
         if (gameOverScreen != null) gameOverScreen.SetActive(true);
     }
+    
 
     public void ShowShiftComplete(int dayCompleted)
     {
+        StartCoroutine(VictorySequenceRoutine(dayCompleted));
+    }
+
+    private IEnumerator VictorySequenceRoutine(int dayCompleted)
+    {
+        // 1. Smoothly fade the entire screen to black
+        if (blackoutImage != null)
+        {
+            blackoutImage.gameObject.SetActive(true);
+            Color c = blackoutImage.color;
+            c.a = 0f;
+            
+            while (c.a < 1f)
+            {
+                // Fades slightly slower than the panic blinks for a calming effect
+                c.a += Time.deltaTime * 0.8f; 
+                blackoutImage.color = c;
+                yield return null;
+            }
+        }
+
+        // 2. Wait one second in pure darkness for dramatic effect
+        yield return new WaitForSeconds(1.0f);
+
+        // 3. Play the satisfying 6:00 AM alarm/chime!
+        if (victoryAlarmAudio != null) victoryAlarmAudio.Play();
+
+        // 4. Reveal the final victory text
         if (shiftCompleteScreen != null) shiftCompleteScreen.SetActive(true);
-        if (shiftCompleteText != null) shiftCompleteText.text = $"DAY {dayCompleted} COMPLETE.\nPRESS TO CONTINUE.";
+        if (shiftCompleteText != null) shiftCompleteText.text = $"6:00 AM\nDAY {dayCompleted} SURVIVED.";
     }
     
     private IEnumerator ScrambleTextRoutine(string finalName, string finalNumber)
     {
         string glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-        float scrambleDuration = 1.2f; // Takes 1.2 seconds to "decode" the caller ID
         float timer = 0f;
 
         while (timer < scrambleDuration)
