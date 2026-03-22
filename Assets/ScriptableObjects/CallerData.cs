@@ -3,6 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewCaller", menuName = "SorryToBotherYou/Caller Profile")]
 public class CallerData : ScriptableObject
 {
+    
     [Header("Caller Identity")]
     public string callerName = "Unknown";
     public string callerNumber = "000-0000";
