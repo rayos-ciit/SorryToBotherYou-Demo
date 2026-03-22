@@ -36,7 +36,7 @@ public class LevelLoader : MonoBehaviour
         // Slowly reduce the alpha until it is 0 (invisible)
         while (fadeImage.color.a > 0)
         {
-            float newAlpha = fadeImage.color.a - (Time.deltaTime * fadeSpeed);
+            float newAlpha = fadeImage.color.a - (Time.unscaledDeltaTime * fadeSpeed);
             fadeImage.color = new Color(0, 0, 0, newAlpha);
             yield return null; // Wait a frame
         }
@@ -53,7 +53,7 @@ public class LevelLoader : MonoBehaviour
         // Slowly increase the alpha until it is 1 (solid black)
         while (fadeImage.color.a < 1)
         {
-            float newAlpha = fadeImage.color.a + (Time.deltaTime * fadeSpeed);
+            float newAlpha = fadeImage.color.a + (Time.unscaledDeltaTime * fadeSpeed);
             fadeImage.color = new Color(0, 0, 0, newAlpha);
             yield return null; 
         }
