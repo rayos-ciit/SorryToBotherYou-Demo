@@ -1,26 +1,33 @@
 using UnityEngine;
-using TMPro; // Standard for Unity UI text
+using TMPro; 
+using System.Collections; // Needed for Coroutines!
 
 public class UIManager : MonoBehaviour
 {
+    private Coroutine scrambleRoutine;
+    
     [Header("Caller ID Screen")]
-    [Tooltip("Drag the TextMeshPro UI elements here.")]
     public TMP_Text callerNameText;
     public TMP_Text callerNumberText;
     public string defaultIdleText = "SYSTEM IDLE...";
 
     [Header("Shift Clock")]
-    [Tooltip("Drag the UI Image representing the clock hand here.")]
     public RectTransform clockHand;
-    [Tooltip("Z-axis rotation for 12:00 AM")]
     public float startRotationZ = 0f;   
-    [Tooltip("Z-axis rotation for 6:00 AM (usually -180 degrees for half a clock face)")]
     public float endRotationZ = -180f;  
 
-    [Header("Corporate Strikes")]
-    [Tooltip("Drag your Strike UI GameObjects (e.g., pink slips) into this array in order.")]
+    [Header("Corporate Strikes (Legacy)")]
+    [Tooltip("You can leave this empty (Size 0) if you are only using the blackout effect.")]
     public GameObject[] strikeVisuals;
     
+    [Header("Blackout Strike Effect")]
+    public AudioSource strikeAudioSource; // The Death Bell
+    public UnityEngine.UI.Image blackoutImage; // The black screen
+    [Tooltip("How fast the eyes fade to black and back.")]
+    public float blinkSpeed = 5f;
+    [Tooltip("How many times the screen flashes black per strike.")]
+    public int blinkCount = 2;
+
     [Header("Game Loop Screens")]
     public GameObject gameOverScreen;
     public GameObject shiftCompleteScreen;
@@ -31,44 +38,76 @@ public class UIManager : MonoBehaviour
         ClearCallerID();
         UpdateStrikes(0);
         UpdateClock(0f);
+        
+        if (blackoutImage != null) blackoutImage.gameObject.SetActive(false);
     }
 
-    // Called by the PhoneController when a call rings
     public void UpdateCallerID(string name, string number)
     {
-        if (callerNameText != null) callerNameText.text = name;
-        if (callerNumberText != null) callerNumberText.text = number;
+        if (scrambleRoutine != null) StopCoroutine(scrambleRoutine);
+        scrambleRoutine = StartCoroutine(ScrambleTextRoutine(name, number));
     }
 
-    // Called when the call ends or is on standby
     public void ClearCallerID()
     {
         if (callerNameText != null) callerNameText.text = defaultIdleText;
         if (callerNumberText != null) callerNumberText.text = "";
     }
 
-    // Called by the GameManager when a call is successfully resolved
     public void UpdateClock(float shiftPercentage)
     {
         if (clockHand != null)
         {
-            // This calculates the exact angle the hand should point to based on progress
             float currentRot = Mathf.Lerp(startRotationZ, endRotationZ, shiftPercentage);
             clockHand.localEulerAngles = new Vector3(0, 0, currentRot);
         }
     }
 
-    // Called by the GameManager when the player messes up
     public void UpdateStrikes(int currentStrikes)
     {
+        // 1. The Legacy Pink Slips (Will just do nothing if the array is empty)
         for (int i = 0; i < strikeVisuals.Length; i++)
         {
-            // Turns on the visual if the loop index is less than the current strikes
-            if (i < currentStrikes)
-                strikeVisuals[i].SetActive(true);
-            else
-                strikeVisuals[i].SetActive(false);
+            if (i < currentStrikes) strikeVisuals[i].SetActive(true);
+            else strikeVisuals[i].SetActive(false);
         }
+
+        // 2. The New Blackout Effect!
+        // We check > 0 so it doesn't ring the bell when the shift first starts
+        if (currentStrikes > 0)
+        {
+            if (strikeAudioSource != null) strikeAudioSource.Play();
+            if (blackoutImage != null) StartCoroutine(BlinkEffect());
+        }
+    }
+
+    private IEnumerator BlinkEffect()
+    {
+        blackoutImage.gameObject.SetActive(true);
+        Color c = blackoutImage.color;
+
+        for (int i = 0; i < blinkCount; i++)
+        {
+            // Fade to black (0.9f keeps it just barely transparent for panic)
+            while (c.a < 0.9f) 
+            {
+                c.a += Time.deltaTime * blinkSpeed;
+                blackoutImage.color = c;
+                yield return null;
+            }
+            // Fade back to clear
+            while (c.a > 0f)
+            {
+                c.a -= Time.deltaTime * blinkSpeed;
+                blackoutImage.color = c;
+                yield return null;
+            }
+        }
+        
+        // Ensure it is perfectly invisible when done
+        c.a = 0f;
+        blackoutImage.color = c;
+        blackoutImage.gameObject.SetActive(false);
     }
     
     public void ShowGameOver()
@@ -80,5 +119,44 @@ public class UIManager : MonoBehaviour
     {
         if (shiftCompleteScreen != null) shiftCompleteScreen.SetActive(true);
         if (shiftCompleteText != null) shiftCompleteText.text = $"DAY {dayCompleted} COMPLETE.\nPRESS TO CONTINUE.";
+    }
+    
+    private IEnumerator ScrambleTextRoutine(string finalName, string finalNumber)
+    {
+        string glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        float scrambleDuration = 1.2f; // Takes 1.2 seconds to "decode" the caller ID
+        float timer = 0f;
+
+        while (timer < scrambleDuration)
+        {
+            timer += Time.deltaTime;
+
+            string scrambledName = "";
+            string scrambledNumber = "";
+
+            // Generate a random string of characters matching the length of the real name
+            for (int i = 0; i < finalName.Length; i++)
+            {
+                if (finalName[i] == ' ') scrambledName += " "; // Preserve spaces
+                else scrambledName += glyphs[Random.Range(0, glyphs.Length)];
+            }
+
+            // Generate a random string matching the length of the real number
+            for (int i = 0; i < finalNumber.Length; i++)
+            {
+                if (finalNumber[i] == ' ' || finalNumber[i] == '-') scrambledNumber += finalNumber[i]; // Preserve formatting
+                else scrambledNumber += glyphs[Random.Range(0, glyphs.Length)];
+            }
+
+            if (callerNameText != null) callerNameText.text = scrambledName;
+            if (callerNumberText != null) callerNumberText.text = scrambledNumber;
+
+            // Wait a tiny fraction of a second before scrambling again to create a flickering effect
+            yield return new WaitForSeconds(0.05f); 
+        }
+
+        // Timer is up! Lock in the final text (This is when the player spots the Mimic swap!)
+        if (callerNameText != null) callerNameText.text = finalName;
+        if (callerNumberText != null) callerNumberText.text = finalNumber;
     }
 }

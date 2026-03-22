@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI; // We need this to change the glitch screen's color!
 
 public class ComputerController : MonoBehaviour
 {
@@ -7,26 +8,37 @@ public class ComputerController : MonoBehaviour
     public GameManager gameManager;
     
     [Header("Screen States (Assign GameObjects)")]
-    [Tooltip("The normal, idle desktop screen.")]
     public GameObject desktopScreen;
-    [Tooltip("The distorted, terrifying screen for The Virus.")]
     public GameObject glitchScreen;
-    [Tooltip("The retro DOS text boot sequence.")]
     public GameObject rebootScreen;
 
+    [Header("Glitch Effect Settings")]
+    public AudioSource glitchAudioSource;
+    private Image glitchImage;
+    private RectTransform glitchRect;
+    private Vector2 originalGlitchPos;
+    private Coroutine glitchRoutine;
+
     [Header("Reboot Mechanics")]
-    [Tooltip("How long the player must hold the power button to force a reset.")]
     public float requiredHoldTimeToReboot = 2.0f;
-    [Tooltip("How long the screen stays on the DOS boot sequence before finishing.")]
     public float rebootDuration = 4.0f;
 
-    // Tracking variables
     private bool isHoldingPower = false;
     private float currentHoldTime = 0f;
     private bool isRebooting = false;
     private CallerData currentCaller;
 
-    // The GameManager will call this the exact moment the phone starts ringing
+    void Start()
+    {
+        // Grab the components off the glitch screen so we can manipulate them
+        if (glitchScreen != null)
+        {
+            glitchImage = glitchScreen.GetComponent<Image>();
+            glitchRect = glitchScreen.GetComponent<RectTransform>();
+            if (glitchRect != null) originalGlitchPos = glitchRect.anchoredPosition;
+        }
+    }
+
     public void OnCallStarted(CallerData caller)
     {
         currentCaller = caller;
@@ -35,6 +47,10 @@ public class ComputerController : MonoBehaviour
         {
             Debug.Log("The Virus is invading! Monitor is glitching.");
             SetScreenState(glitchScreen);
+            
+            // Start the violent visual shaking and audio
+            if (glitchRoutine == null) glitchRoutine = StartCoroutine(GlitchRoutine());
+            if (glitchAudioSource != null) glitchAudioSource.Play();
         }
         else
         {
@@ -42,19 +58,18 @@ public class ComputerController : MonoBehaviour
         }
     }
 
-    // Call this from the GameManager when a shift ends or a call is safely resolved
     public void ResetMonitor()
     {
         currentCaller = null;
         if (!isRebooting)
         {
+            StopGlitch();
             SetScreenState(desktopScreen);
         }
     }
 
     void Update()
     {
-        // If the player is holding the button, fill up the invisible timer
         if (isHoldingPower && !isRebooting)
         {
             currentHoldTime += Time.deltaTime;
@@ -66,20 +81,16 @@ public class ComputerController : MonoBehaviour
         }
     }
 
-    // Hook this up to the Power Button's "Pointer Down" Event Trigger
     public void PointerDownPowerButton()
     {
-        if (isRebooting) return; // Can't start a reboot if we're already rebooting
-        
+        if (isRebooting) return; 
         isHoldingPower = true;
-        Debug.Log("Holding PC Power Button...");
     }
 
-    // Hook this up to the Power Button's "Pointer Up" Event Trigger
     public void PointerUpPowerButton()
     {
         isHoldingPower = false;
-        currentHoldTime = 0f; // Reset the timer if they let go too early
+        currentHoldTime = 0f; 
     }
 
     private IEnumerator RebootSequence()
@@ -88,10 +99,11 @@ public class ComputerController : MonoBehaviour
         isHoldingPower = false;
         currentHoldTime = 0f;
 
+        // Instantly kill the virus effects the moment the reboot triggers
+        StopGlitch();
         Debug.Log("System Rebooting...");
         SetScreenState(rebootScreen);
 
-        // Win/Loss Logic: Did they reboot when they were supposed to?
         if (currentCaller != null)
         {
             if (currentCaller.requiredAction == CorrectAction.Reboot)
@@ -106,7 +118,6 @@ public class ComputerController : MonoBehaviour
             }
         }
 
-        // Wait for the retro DOS screen to "load"
         yield return new WaitForSeconds(rebootDuration);
 
         Debug.Log("Reboot Complete. Back to Desktop.");
@@ -114,7 +125,6 @@ public class ComputerController : MonoBehaviour
         isRebooting = false;
     }
 
-    // A handy helper to smoothly swap the screen layer GameObjects
     private void SetScreenState(GameObject activeScreen)
     {
         if (desktopScreen != null) desktopScreen.SetActive(false);
@@ -122,5 +132,45 @@ public class ComputerController : MonoBehaviour
         if (rebootScreen != null) rebootScreen.SetActive(false);
 
         if (activeScreen != null) activeScreen.SetActive(true);
+    }
+
+    // --- NEW GLITCH BEHAVIORS ---
+
+    private IEnumerator GlitchRoutine()
+    {
+        while (true) // Runs continuously until stopped
+        {
+            // 1. Violent Shaking
+            if (glitchRect != null)
+            {
+                float offsetX = Random.Range(-20f, 20f);
+                float offsetY = Random.Range(-20f, 20f);
+                glitchRect.anchoredPosition = originalGlitchPos + new Vector2(offsetX, offsetY);
+            }
+
+            // 2. Harsh Color Inversion
+            if (glitchImage != null)
+            {
+                Color[] harshColors = { Color.red, Color.magenta, Color.green, Color.yellow, Color.white, Color.cyan };
+                glitchImage.color = harshColors[Random.Range(0, harshColors.Length)];
+            }
+
+            // Flashes super fast (every 0.05 to 0.1 seconds)
+            yield return new WaitForSeconds(Random.Range(0.05f, 0.1f));
+        }
+    }
+
+    private void StopGlitch()
+    {
+        if (glitchRoutine != null)
+        {
+            StopCoroutine(glitchRoutine);
+            glitchRoutine = null;
+        }
+        
+        // Reset the UI back to normal so it isn't permanently broken
+        if (glitchRect != null) glitchRect.anchoredPosition = originalGlitchPos;
+        if (glitchImage != null) glitchImage.color = Color.white;
+        if (glitchAudioSource != null) glitchAudioSource.Stop();
     }
 }
