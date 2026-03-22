@@ -7,6 +7,8 @@ public class GameManager : MonoBehaviour
 {
     [Header("Connections")]
     public UIManager uiManager;
+    public PhoneController phoneController;
+    public ComputerController computerController;
     
     [Header("Shift Settings")]
     public int currentDay = 1;
@@ -68,8 +70,11 @@ public class GameManager : MonoBehaviour
             // Pull a caller from our weighted deck
             CallerData nextCaller = PullCallerFromDeck();
             
-            // TODO: Tell the Phone/UI script to start ringing with 'nextCaller' data!
+            
             Debug.Log($"RING RING! Caller: {nextCaller.callerName} (Type: {nextCaller.typeOfCaller})");
+            
+            if (phoneController != null) phoneController.StartRinging(nextCaller);
+            if (computerController != null) computerController.OnCallStarted(nextCaller);
 
             // Pause this loop until the call is resolved by the player
             // (We will build the system to unpause this later)
@@ -131,6 +136,7 @@ public class GameManager : MonoBehaviour
 
         // Mark the call as resolved so the ShiftRoutine can continue
         isCallActive = false; 
+        if (computerController != null) computerController.ResetMonitor();
     }
 
     private void TriggerGameOver()
