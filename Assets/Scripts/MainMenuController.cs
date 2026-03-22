@@ -1,8 +1,15 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Audio;
 
 public class MainMenuController : MonoBehaviour
 {
+    [Header("Transitions")]
+    public LevelLoader levelLoader;
+    
+    [Header("Audio Settings")]
+    public AudioMixer mainMixer;
+    
     [Header("Scene Management")]
     [Tooltip("The exact name of your gameplay scene in the Build Settings.")]
     public string gameSceneName = "SampleScene"; 
@@ -24,10 +31,10 @@ public class MainMenuController : MonoBehaviour
     // --- GAME LOOP BUTTONS ---
     public void StartGame()
     {
-        Debug.Log("Starting Shift...");
-        SceneManager.LoadScene(gameSceneName);
+        Debug.Log("Starting Shift with transition...");
+        // Tell the LevelLoader to do its thing instead of instantly loading!
+        levelLoader.LoadSceneWithFade(gameSceneName); 
     }
-
     public void QuitGame()
     {
         Debug.Log("Quitting Game...");
@@ -56,5 +63,12 @@ public class MainMenuController : MonoBehaviour
         mainPanel.SetActive(true);
         optionsPanel.SetActive(false);
         howToPlayPanel.SetActive(false);
+    }
+    
+    // Called dynamically by the UI Slider
+    public void SetVolume(float sliderValue)
+    {
+        // Converts the 0-1 slider value into a -80dB to 0dB logarithmic scale
+        mainMixer.SetFloat("MasterVolume", Mathf.Log10(sliderValue) * 20);
     }
 }
