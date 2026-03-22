@@ -15,10 +15,6 @@ public class UIManager : MonoBehaviour
     public RectTransform clockHand;
     public float startRotationZ = 0f;   
     public float endRotationZ = -180f;  
-
-    [Header("Corporate Strikes (Legacy)")]
-    [Tooltip("You can leave this empty (Size 0) if you are only using the blackout effect.")]
-    public GameObject[] strikeVisuals;
     
     [Header("Blackout Strike Effect")]
     public AudioSource strikeAudioSource; // The Death Bell
@@ -65,15 +61,6 @@ public class UIManager : MonoBehaviour
 
     public void UpdateStrikes(int currentStrikes)
     {
-        // 1. The Legacy Pink Slips (Will just do nothing if the array is empty)
-        for (int i = 0; i < strikeVisuals.Length; i++)
-        {
-            if (i < currentStrikes) strikeVisuals[i].SetActive(true);
-            else strikeVisuals[i].SetActive(false);
-        }
-
-        // 2. The New Blackout Effect!
-        // We check > 0 so it doesn't ring the bell when the shift first starts
         if (currentStrikes > 0)
         {
             if (strikeAudioSource != null) strikeAudioSource.Play();
