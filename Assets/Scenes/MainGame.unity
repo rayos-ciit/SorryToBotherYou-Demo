@@ -5703,6 +5703,9 @@ MonoBehaviour:
   - {fileID: 169024528}
   - {fileID: 29604281}
   - {fileID: 1874940832}
+  uiFoleySource: {fileID: 0}
+  bookOpenClip: {fileID: 0}
+  pageFlipClip: {fileID: 0}
   ambientAudioSource: {fileID: 1480416625}
   phoneAudioSource: {fileID: 312826378}
   muffledVolumeLevel: 0.2
@@ -6118,7 +6121,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1753127550
 RectTransform:
   m_ObjectHideFlags: 0
