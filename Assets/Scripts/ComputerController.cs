@@ -1,6 +1,6 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI; // We need this to change the glitch screen's color!
+using UnityEngine.UI;
 
 public class ComputerController : MonoBehaviour
 {
@@ -18,6 +18,7 @@ public class ComputerController : MonoBehaviour
     private RectTransform glitchRect;
     private Vector2 originalGlitchPos;
     private Coroutine glitchRoutine;
+    public bool disableMonitorGlitch = false;
 
     [Header("Reboot Mechanics")]
     public float requiredHoldTimeToReboot = 2.0f;
@@ -28,7 +29,7 @@ public class ComputerController : MonoBehaviour
     private bool isRebooting = false;
     private CallerData currentCaller;
 
-    void Start()
+    void Awake()
     {
         // Grab the components off the glitch screen so we can manipulate them
         if (glitchScreen != null)
@@ -37,11 +38,15 @@ public class ComputerController : MonoBehaviour
             glitchRect = glitchScreen.GetComponent<RectTransform>();
             if (glitchRect != null) originalGlitchPos = glitchRect.anchoredPosition;
         }
+        
+        // Always start the game looking at the clean desktop!
+        SetScreenState(desktopScreen);
     }
 
     public void OnCallStarted(CallerData caller)
     {
-        gameObject.SetActive(true);
+        // Bulletproof: Force the object to be active just in case
+        gameObject.SetActive(true); 
         
         currentCaller = caller;
         
@@ -50,9 +55,11 @@ public class ComputerController : MonoBehaviour
             Debug.Log("The Virus is invading! Monitor is glitching.");
             SetScreenState(glitchScreen);
             
-            // Start the violent visual shaking and audio
-            if (glitchRoutine == null) glitchRoutine = StartCoroutine(GlitchRoutine());
-            if (glitchAudioSource != null) glitchAudioSource.Play();
+            if (!disableMonitorGlitch)
+            {
+                if (glitchRoutine == null) glitchRoutine = StartCoroutine(GlitchRoutine());
+                if (glitchAudioSource != null) glitchAudioSource.Play();
+            }
         }
         else
         {
@@ -72,6 +79,7 @@ public class ComputerController : MonoBehaviour
 
     void Update()
     {
+        // If the player is holding the power button, count up the timer
         if (isHoldingPower && !isRebooting)
         {
             currentHoldTime += Time.deltaTime;
@@ -83,12 +91,14 @@ public class ComputerController : MonoBehaviour
         }
     }
 
+    // Call this from your UI Button's "Pointer Down" event
     public void PointerDownPowerButton()
     {
         if (isRebooting) return; 
         isHoldingPower = true;
     }
 
+    // Call this from your UI Button's "Pointer Up" event
     public void PointerUpPowerButton()
     {
         isHoldingPower = false;
@@ -108,15 +118,16 @@ public class ComputerController : MonoBehaviour
 
         if (currentCaller != null)
         {
+            // NEW V2 LOGIC: Tell GameManager to resolve the call safely!
             if (currentCaller.requiredAction == CorrectAction.Reboot)
             {
                 Debug.Log("Successfully rebooted to clear The Virus!");
-                gameManager.HandleCallResult(true);
+                gameManager.ResolveCall(true);
             }
             else
             {
                 Debug.Log("Rebooted the PC during a normal call! Strike earned.");
-                gameManager.HandleCallResult(false);
+                gameManager.ResolveCall(false);
             }
         }
 
@@ -141,13 +152,10 @@ public class ComputerController : MonoBehaviour
         }
     }
 
-    // --- NEW GLITCH BEHAVIORS ---
-
     private IEnumerator GlitchRoutine()
     {
-        while (true) // Runs continuously until stopped
+        while (true)
         {
-            // 1. Violent Shaking
             if (glitchRect != null)
             {
                 float offsetX = Random.Range(-20f, 20f);
@@ -155,14 +163,12 @@ public class ComputerController : MonoBehaviour
                 glitchRect.anchoredPosition = originalGlitchPos + new Vector2(offsetX, offsetY);
             }
 
-            // 2. Harsh Color Inversion
             if (glitchImage != null)
             {
                 Color[] harshColors = { Color.red, Color.magenta, Color.green, Color.yellow, Color.white, Color.cyan };
                 glitchImage.color = harshColors[Random.Range(0, harshColors.Length)];
             }
 
-            // Flashes super fast (every 0.05 to 0.1 seconds)
             yield return new WaitForSeconds(Random.Range(0.05f, 0.1f));
         }
     }
@@ -175,7 +181,6 @@ public class ComputerController : MonoBehaviour
             glitchRoutine = null;
         }
         
-        // Reset the UI back to normal so it isn't permanently broken
         if (glitchRect != null) glitchRect.anchoredPosition = originalGlitchPos;
         if (glitchImage != null) glitchImage.color = Color.white;
         if (glitchAudioSource != null) glitchAudioSource.Stop();

@@ -1793,7 +1793,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &509859693
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2376,6 +2376,7 @@ GameObject:
   - component: {fileID: 590309925}
   - component: {fileID: 590309924}
   - component: {fileID: 590309926}
+  - component: {fileID: 590309927}
   m_Layer: 5
   m_Name: CrtMonitor
   m_TagString: Untagged
@@ -2463,8 +2464,21 @@ MonoBehaviour:
   glitchScreen: {fileID: 509859692}
   rebootScreen: {fileID: 1635363317}
   glitchAudioSource: {fileID: 1259194947}
+  disableMonitorGlitch: 0
   requiredHoldTimeToReboot: 2
   rebootDuration: 4
+--- !u!225 &590309927
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 590309922}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -3863,8 +3877,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b84626b63dd72d740b0e67e71cecd194, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  debugForceType: 1
-  debugForcedType: 4
   uiManager: {fileID: 1320293895}
   phoneController: {fileID: 532014896}
   computerController: {fileID: 590309926}
@@ -3880,6 +3892,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e7f41ac0d548d424383c7a07d1d267d2, type: 2}
   - {fileID: 11400000, guid: d13594900b215e54dac4c87a6900c9c5, type: 2}
   - {fileID: 11400000, guid: 3588296b507fe9b4bb892ed38e252947, type: 2}
+  debugForceType: 1
+  debugForcedType: 4
 --- !u!4 &1247691766
 Transform:
   m_ObjectHideFlags: 0
@@ -5449,9 +5463,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueSystem
   gameManager: {fileID: 1247691765}
   phoneController: {fileID: 532014896}
-  voiceAudioSource: {fileID: 1953621134}
   dialogueBoxUI: {fileID: 346827282}
   dialogueText: {fileID: 499684606}
+  voiceAudioSource: {fileID: 1953621134}
   typingSpeed: 0.05
   disableScrambler: 0
 --- !u!4 &1522143674
@@ -5749,7 +5763,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1635363318
 RectTransform:
   m_ObjectHideFlags: 0

@@ -71,7 +71,7 @@ public class PhoneController : MonoBehaviour
             {
                 Debug.Log("Success: The Disturbance gave up and left.");
                 isRinging = false;
-                gameManager.HandleCallResult(true);
+                gameManager.ResolveCall(true);
             }
             else
             {
@@ -79,7 +79,7 @@ public class PhoneController : MonoBehaviour
                 Debug.Log("Boss: You took too long to handle that call!");
                 isRinging = false;
                 isOffHook = false;
-                gameManager.HandleCallResult(false);
+                gameManager.ResolveCall(false);
             }
         } 
         uiManager.ClearCallerID();
@@ -102,7 +102,7 @@ public class PhoneController : MonoBehaviour
         {
             if(slaRoutine != null) StopCoroutine(slaRoutine);
             Debug.Log("Lethal sensory overload triggered! You picked up The Disturbance.");
-            gameManager.HandleCallResult(false);
+            gameManager.ResolveCall(false);
             return;
         }
 
@@ -157,7 +157,7 @@ public class PhoneController : MonoBehaviour
         }
         else
         {
-            gameManager.HandleCallResult(false);
+            gameManager.ResolveCall(false);
         }
     }
 
@@ -177,12 +177,12 @@ public class PhoneController : MonoBehaviour
         if (currentCaller.requiredAction == CorrectAction.HangUp)
         {
             Debug.Log("Correctly slammed the phone down on the entity!");
-            gameManager.HandleCallResult(true);
+            gameManager.ResolveCall(true);
         }
         else
         {
             Debug.Log("Hung up on a normal client! Strike earned.");
-            gameManager.HandleCallResult(false);
+            gameManager.ResolveCall(false);
         }
         uiManager.ClearCallerID();
     }
@@ -203,7 +203,7 @@ public class PhoneController : MonoBehaviour
         Debug.Log("Click. The entity hung up.");
         phoneAudioSource.Stop();
         isOnHold = false;
-        gameManager.HandleCallResult(true);
+        gameManager.ResolveCall(true);
     }
     
     // Safely puts the phone down automatically without triggering penalty logic

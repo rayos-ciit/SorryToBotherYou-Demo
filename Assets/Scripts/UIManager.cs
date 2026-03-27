@@ -11,7 +11,6 @@ public class UIManager : MonoBehaviour
     public Sprite phoneOnBaseSprite; // The art of the phone sitting normally
     public Sprite phoneOffBaseSprite; // The art of just the wire/base
     
-    
     [Header("Mimic Sabotage")]
     [Tooltip("How many seconds the Caller ID scrambles before revealing the true text.")]
     public float scrambleDuration = 0.8f;
@@ -252,5 +251,11 @@ public class UIManager : MonoBehaviour
         {
             phoneImageComponent.sprite = phoneOnBaseSprite;
         }
+    }
+    
+    public void UpdateQuota(int completed, int total)
+    {
+        // Logs the quota to the console for your debugging purposes!
+        Debug.Log($"[SHIFT STATUS] Quota Update: {completed} / {total} calls completed.");
     }
 }

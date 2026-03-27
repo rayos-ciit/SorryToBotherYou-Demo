@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1708d0f7b0ebdb41a044c506c914073, type: 3}
   m_Name: SYSTEM.ERR_Virus
   m_EditorClassIdentifier: Assembly-CSharp::CallerData
+  canMaskCallerID: 0
   callerName: SYSTEM.ERR
   callerNumber: 1010101
-  canMaskCallerID: 0
   typeOfCaller: 4
   spawnWeight: 5
   requiredAction: 2
@@ -22,5 +22,5 @@ MonoBehaviour:
   timeLimitToRespond: 0
   ringSFX: {fileID: 0}
   voiceSFX: {fileID: 0}
-  causesScreenFlicker: 1
-  dialogueLines: []
+  causesScreenFlicker: 0
+  dialogueVariations: []
