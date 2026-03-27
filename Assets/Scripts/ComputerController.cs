@@ -140,13 +140,15 @@ public class ComputerController : MonoBehaviour
 
     private void SetScreenState(GameObject screenToShow)
     {
-        // 1. Hide every possible screen first
-        if (desktopScreen != null) desktopScreen.SetActive(false);
+        // 1. ALWAYS keep the monitor frame / desktop turned ON
+        if (desktopScreen != null) desktopScreen.SetActive(true);
+
+        // 2. Hide the conditional screens 
         if (glitchScreen != null) glitchScreen.SetActive(false);
         if (rebootScreen != null) rebootScreen.SetActive(false);
 
-        // 2. Only show the one we actually need right now
-        if (screenToShow != null)
+        // 3. If we need to show a special screen (like Glitch or Reboot), turn it on over the desktop!
+        if (screenToShow != null && screenToShow != desktopScreen)
         {
             screenToShow.SetActive(true);
         }

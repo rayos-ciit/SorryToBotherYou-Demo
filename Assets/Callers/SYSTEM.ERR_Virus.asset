@@ -22,5 +22,5 @@ MonoBehaviour:
   timeLimitToRespond: 0
   ringSFX: {fileID: 0}
   voiceSFX: {fileID: 0}
-  causesScreenFlicker: 0
+  causesScreenFlicker: 1
   dialogueVariations: []
