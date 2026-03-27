@@ -6,11 +6,18 @@ public class UIManager : MonoBehaviour
 {
     private Coroutine scrambleRoutine;
     
+    [Header("Phone Visuals")]
+    public UnityEngine.UI.Image phoneImageComponent; // The UI Image object in your Canvas
+    public Sprite phoneOnBaseSprite; // The art of the phone sitting normally
+    public Sprite phoneOffBaseSprite; // The art of just the wire/base
     
     
     [Header("Mimic Sabotage")]
     [Tooltip("How many seconds the Caller ID scrambles before revealing the true text.")]
-    public float scrambleDuration = 1.2f;
+    public float scrambleDuration = 0.8f;
+    
+    [Header("Debug Settings")]
+    public bool disableCallerIDScrambler = false; // Check this to skip the animation
     
     [Header("Caller ID Screen")]
     public TMP_Text callerNameText;
@@ -51,10 +58,18 @@ public class UIManager : MonoBehaviour
 
     public void UpdateCallerID(string name, string number)
     {
+        // NEW: If debugging is on, instantly show the real name/number and skip the animation
+        if (disableCallerIDScrambler)
+        {
+            if (callerNameText != null) callerNameText.text = name;
+            if (callerNumberText != null) callerNumberText.text = number;
+            return; // Stop the code here so the coroutine doesn't run
+        }
+
         if (scrambleRoutine != null) StopCoroutine(scrambleRoutine);
         scrambleRoutine = StartCoroutine(ScrambleTextRoutine(name, number));
     }
-
+    
     public void ClearCallerID()
     {
         if (callerNameText != null) callerNameText.text = defaultIdleText;
@@ -221,5 +236,21 @@ public class UIManager : MonoBehaviour
         // Timer is up! Lock in the final text (This is when the player spots the Mimic swap!)
         if (callerNameText != null) callerNameText.text = finalName;
         if (callerNumberText != null) callerNumberText.text = finalNumber;
+    }
+    
+    public void SetPhoneVisualOffHook()
+    {
+        if (phoneImageComponent != null && phoneOffBaseSprite != null)
+        {
+            phoneImageComponent.sprite = phoneOffBaseSprite;
+        }
+    }
+
+    public void SetPhoneVisualOnBase()
+    {
+        if (phoneImageComponent != null && phoneOnBaseSprite != null)
+        {
+            phoneImageComponent.sprite = phoneOnBaseSprite;
+        }
     }
 }

@@ -5,6 +5,10 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    [Header("Debug Settings")]
+    public bool debugForceType = false;
+    public CallerType debugForcedType;
+    
     [Header("Connections")]
     public UIManager uiManager;
     public PhoneController phoneController;
@@ -62,22 +66,31 @@ public class GameManager : MonoBehaviour
     {
         while (callsCompletedToday < totalCallsToday)
         {
-            // Pick a random delay
             float waitTime = Random.Range(minDelayBetweenCalls, maxDelayBetweenCalls);
-            Debug.Log($"Waiting {waitTime} seconds for the next call...");
             yield return new WaitForSeconds(waitTime);
 
-            // Pull a caller from our weighted deck
-            CallerData nextCaller = PullCallerFromDeck();
-            
-            
-            Debug.Log($"RING RING! Caller: {nextCaller.callerName} (Type: {nextCaller.typeOfCaller})");
+            CallerData nextCaller = null;
+
+            // NEW: Debug Logic to force a specific type
+            if (debugForceType)
+            {
+                // Filter the deck for the specific type you want to test
+                List<CallerData> matches = availableCallers.FindAll(c => c.typeOfCaller == debugForcedType);
+                if (matches.Count > 0)
+                {
+                    nextCaller = matches[Random.Range(0, matches.Count)];
+                }
+            }
+
+            // Fallback: If debug is off or no match found, use standard weight logic
+            if (nextCaller == null)
+            {
+                nextCaller = PullCallerFromDeck();
+            }
             
             if (phoneController != null) phoneController.StartRinging(nextCaller);
             if (computerController != null) computerController.OnCallStarted(nextCaller);
 
-            // Pause this loop until the call is resolved by the player
-            // (We will build the system to unpause this later)
             yield return new WaitUntil(() => CallIsResolved()); 
 
             callsCompletedToday++;

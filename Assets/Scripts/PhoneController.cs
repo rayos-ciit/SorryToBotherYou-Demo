@@ -21,7 +21,7 @@ public class PhoneController : MonoBehaviour
     private bool isRinging = false;
     private bool isOffHook = false;
     private bool isOnHold = false;
-    private CallerData currentCaller;
+    public CallerData currentCaller;
     private Coroutine slaRoutine;
 
     public void StartRinging(CallerData caller)
@@ -94,6 +94,8 @@ public class PhoneController : MonoBehaviour
         phoneAudioSource.Stop(); 
 
         Debug.Log("Picked up the receiver.");
+        
+        uiManager.SetPhoneVisualOffHook();
 
         // INSTANT FAIL: Picking up The Disturbance
         if (currentCaller.requiredAction == CorrectAction.Ignore)
@@ -119,27 +121,21 @@ public class PhoneController : MonoBehaviour
     {
         if (!isOffHook || isOnHold) return;
         
-        StopCallAudioAndTimer();
         Debug.Log("Chose to Talk.");
 
-        if (currentCaller.requiredAction == CorrectAction.Talk)
+        if (!dialogueSystem.dialogueBoxUI.activeInHierarchy)
         {
-            Debug.Log("Initiating standard dialogue...");
-            // If the dialogue box isn't active yet, start it. If it is, advance the text.
-            if (!dialogueSystem.dialogueBoxUI.activeInHierarchy)
-            {
-                dialogueSystem.StartDialogue(currentCaller);
-            }
-            else
-            {
-                dialogueSystem.DisplayNextLine();
-            }
-               
+            // First click: Stop timers and start the text
+            if(slaRoutine != null) StopCoroutine(slaRoutine);
+            voiceAudioSource.Stop();
+            phoneAudioSource.Stop();
+            
+            dialogueSystem.StartDialogue(currentCaller);
         }
         else
         {
-            Debug.Log("You talked to the wrong entity...");
-            gameManager.HandleCallResult(false);
+            // Subsequent clicks: Advance the conversation
+            dialogueSystem.DisplayNextLine();
         }
     }
 
@@ -174,6 +170,8 @@ public class PhoneController : MonoBehaviour
         isOnHold = false;
 
         Debug.Log("Hung up the phone.");
+        
+        uiManager.SetPhoneVisualOnBase();
 
         // This is where the player successfully defeats The Mimic!
         if (currentCaller.requiredAction == CorrectAction.HangUp)
@@ -206,5 +204,21 @@ public class PhoneController : MonoBehaviour
         phoneAudioSource.Stop();
         isOnHold = false;
         gameManager.HandleCallResult(true);
+    }
+    
+    // Safely puts the phone down automatically without triggering penalty logic
+    public void ResetPhoneState()
+    {
+        isOffHook = false;
+        isOnHold = false;
+        
+        // Ensure all ringing/talking audio is completely stopped
+        StopCallAudioAndTimer(); 
+        
+        // Swap the art back to the base!
+        if (uiManager != null)
+        {
+            uiManager.SetPhoneVisualOnBase();
+        }
     }
 }

@@ -19,8 +19,12 @@ MonoBehaviour:
   spawnWeight: 4
   requiredAction: 1
   requiresQuickResponse: 0
-  timeLimitToRespond: 5
+  timeLimitToRespond: 0
   ringSFX: {fileID: 0}
   voiceSFX: {fileID: 0}
   causesScreenFlicker: 0
-  dialogueLines: []
+  dialogueLines:
+  - '[Heavy, rhythmic static on the line]'
+  - ...
+  - '[Wet, labored breathing]'
+  - ...I know you're not allowed to hang up on me..."

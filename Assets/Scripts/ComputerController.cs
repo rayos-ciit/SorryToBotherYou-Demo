@@ -41,6 +41,8 @@ public class ComputerController : MonoBehaviour
 
     public void OnCallStarted(CallerData caller)
     {
+        gameObject.SetActive(true);
+        
         currentCaller = caller;
         
         if (caller.causesScreenFlicker)
@@ -125,13 +127,18 @@ public class ComputerController : MonoBehaviour
         isRebooting = false;
     }
 
-    private void SetScreenState(GameObject activeScreen)
+    private void SetScreenState(GameObject screenToShow)
     {
+        // 1. Hide every possible screen first
         if (desktopScreen != null) desktopScreen.SetActive(false);
         if (glitchScreen != null) glitchScreen.SetActive(false);
         if (rebootScreen != null) rebootScreen.SetActive(false);
 
-        if (activeScreen != null) activeScreen.SetActive(true);
+        // 2. Only show the one we actually need right now
+        if (screenToShow != null)
+        {
+            screenToShow.SetActive(true);
+        }
     }
 
     // --- NEW GLITCH BEHAVIORS ---

@@ -1,4 +1,12 @@
 using UnityEngine;
+using System.Collections.Generic;
+
+[System.Serializable]
+public class DialogueVariation
+{
+    [TextArea(2, 5)]
+    public string[] lines;
+}
 
 [CreateAssetMenu(fileName = "NewCaller", menuName = "SorryToBotherYou/Caller Profile")]
 public class CallerData : ScriptableObject
@@ -36,6 +44,20 @@ public class CallerData : ScriptableObject
     [Header("Dialogue (For Normal Clients)")]
     [TextArea(2, 5)]
     public string[] dialogueLines;
+    
+    [Header("Dialogue Variations")]
+    [Tooltip("Add multiple sets of dialogue here. The game will pick one at random.")]
+    public List<DialogueVariation> dialogueVariations;
+
+    // Helper method to pick a random set of lines
+    public string[] GetRandomDialogue()
+    {
+        if (dialogueVariations == null || dialogueVariations.Count == 0) 
+            return null;
+        
+        int index = Random.Range(0, dialogueVariations.Count);
+        return dialogueVariations[index].lines;
+    }
 }
 
 public enum CallerType { NormalClient, Impatient, Mimic, Listener, Virus, Disturbance }

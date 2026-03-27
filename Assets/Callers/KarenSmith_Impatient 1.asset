@@ -23,4 +23,10 @@ MonoBehaviour:
   ringSFX: {fileID: 0}
   voiceSFX: {fileID: 0}
   causesScreenFlicker: 0
-  dialogueLines: []
+  dialogueLines:
+  - '"Finally! Do you have any idea how long I''ve been on hold?"'
+  - '"The computer I bought from you people keeps completely shutting off randomly."'
+  - '"Look, I already know it''s a faulty power supply unit. I don''t need you to
+    read me some generic troubleshooting script."'
+  - '"Just process the replacement for the PSU right now before I escalate this to
+    your manager."'
