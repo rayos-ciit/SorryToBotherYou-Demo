@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Audio;
-using UnityEngine.UI; // Needed to talk to the Slider!
+using UnityEngine.UI;
 
 public class MainMenuController : MonoBehaviour
 {
@@ -10,10 +10,11 @@ public class MainMenuController : MonoBehaviour
     
     [Header("Audio Settings")]
     public AudioMixer mainMixer;
-    public Slider volumeSlider; // Drag your slider here in the inspector
+    public Slider masterSlider;
+    public Slider sfxSlider;
+    public Slider ambienceSlider;
     
     [Header("Scene Management")]
-    [Tooltip("The exact name of your gameplay scene in the Build Settings.")]
     public string gameSceneName = "SampleScene"; 
 
     [Header("Menu Panels")]
@@ -23,27 +24,16 @@ public class MainMenuController : MonoBehaviour
 
     void Start()
     {
-        // 1. Load the saved volume (or default to 0.75 if it's their first time playing)
-        float savedVol = PlayerPrefs.GetFloat("MasterVolume", 0.75f);
-        
-        // 2. Set the physical UI slider to match the saved number
-        if (volumeSlider != null) volumeSlider.value = savedVol;
-        
-        // 3. Actually apply the math to the Audio Engine
-        SetVolume(savedVol);
+        // Load all saved volumes, defaulting to 0.75f (75%)
+        LoadAndSetVolume("MasterVolume", masterSlider);
+        LoadAndSetVolume("SFXVolume", sfxSlider);
+        LoadAndSetVolume("AmbienceVolume", ambienceSlider);
 
         ShowMainPanel();
     }
 
-    public void StartGame()
-    {
-        levelLoader.LoadSceneWithFade(gameSceneName); 
-    }
-
-    public void QuitGame()
-    {
-        Application.Quit();
-    }
+    public void StartGame() => levelLoader.LoadSceneWithFade(gameSceneName); 
+    public void QuitGame() => Application.Quit();
 
     public void ShowOptions()
     {
@@ -66,13 +56,30 @@ public class MainMenuController : MonoBehaviour
         howToPlayPanel.SetActive(false);
     }
     
-    public void SetVolume(float sliderValue)
+    // --- NEW STREAMLINED AUDIO LOGIC ---
+
+    private void LoadAndSetVolume(string paramName, Slider slider)
     {
-        // Apply the volume to the mixer
-        mainMixer.SetFloat("MasterVolume", Mathf.Log10(sliderValue) * 20);
+        float savedVol = PlayerPrefs.GetFloat(paramName, 0.75f);
+        if (slider != null) slider.value = savedVol;
         
-        // Save the setting permanently to the player's hard drive!
-        PlayerPrefs.SetFloat("MasterVolume", sliderValue);
+        // Ensure the mixer updates immediately on startup (avoiding 0 values if muted)
+        float mixerVol = savedVol <= 0.001f ? -80f : Mathf.Log10(savedVol) * 20;
+        mainMixer.SetFloat(paramName, mixerVol);
+    }
+
+    // Hook these three methods directly to their respective UI Sliders OnValueChanged events!
+    public void SetMasterVolume(float value) => UpdateMixerAndSave("MasterVolume", value);
+    public void SetSFXVolume(float value) => UpdateMixerAndSave("SFXVolume", value);
+    public void SetAmbienceVolume(float value) => UpdateMixerAndSave("AmbienceVolume", value);
+
+    private void UpdateMixerAndSave(string paramName, float sliderValue)
+    {
+        // Math tip: If the slider hits 0, drop the mixer to -80db (total silence)
+        float mixerVol = sliderValue <= 0.001f ? -80f : Mathf.Log10(sliderValue) * 20;
+        
+        mainMixer.SetFloat(paramName, mixerVol);
+        PlayerPrefs.SetFloat(paramName, sliderValue);
         PlayerPrefs.Save();
     }
 }
