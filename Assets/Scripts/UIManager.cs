@@ -68,6 +68,11 @@ public class UIManager : MonoBehaviour
         if (callerIDContainer != null) callerIDContainer.SetActive(true);
         ClearCallerID(); // Set the text to "SYSTEM IDLE..." 
     }
+    
+    public void SetCallerContainerActive(bool isActive)
+    {
+        if (callerIDContainer != null) callerIDContainer.SetActive(isActive);
+    }
 
     public void UpdateCallerID(string name, string number)
     {

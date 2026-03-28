@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1708d0f7b0ebdb41a044c506c914073, type: 3}
   m_Name: SYSTEM.ERR_Virus
   m_EditorClassIdentifier: Assembly-CSharp::CallerData
-  canMaskCallerID: 0
-  callerName: SYSTEM.ERR
+  canMaskCallerID: 1
+  callerName: Linus Rossetta
   callerNumber: 1010101
   typeOfCaller: 4
   spawnWeight: 5
@@ -23,4 +23,21 @@ MonoBehaviour:
   ringSFX: {fileID: 0}
   voiceSFX: {fileID: 0}
   causesScreenFlicker: 1
-  dialogueVariations: []
+  dialogueVariations:
+  - lines:
+    - 'Don''t put the phone down. Don''t put the phone down. Don''t put the phone
+      down. Don''t put the phone down. Don''t put the phone down. Don''t put the
+      phone down. Don''t put the phone down. Don''t put the phone down. Don''t put
+      the phone down. Don''t put the phone down. Don''t put the phone down. Don''t
+      put the phone down. Don''t put the phone down. Don''t put the phone down. Don''t
+      put the phone down. Don''t put the phone down. Don''t put the phone down. Don''t
+      put the phone down. Don''t put the phone down. Don''t put the phone down. Don''t
+      put the phone down. Don''t put the phone down.  '
+    - 'Keep talking and talking and talking and talking and talking and talking and
+      talking and talking and talking and talking talking and talking and talking
+      and talking and talking and talking and talking and talking and talking and
+      talking talking and talking and talking and talking and talking and talking
+      and talking and talking and talking and talking talking and talking and talking
+      and talking and talking and talking and talking and talking and talking and
+      talking talking and talking and talking and talking and talking and talking
+      and talking and talking and talking and talking '

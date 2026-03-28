@@ -16,6 +16,20 @@ public class DialogueSystem : MonoBehaviour
     private int currentLineIndex = 0;
     private bool isTyping = false;
     private bool useScrambler = false;
+    
+    void Start()
+    {
+        // Force the dialogue box to hide itself the moment the game launches!
+        if (dialogueBoxUI != null) 
+        {
+            dialogueBoxUI.SetActive(false);
+        }
+        
+        if (dialogueText != null) 
+        {
+            dialogueText.text = "";
+        }
+    }
 
     public void StartDialogue(CallerData caller)
     {

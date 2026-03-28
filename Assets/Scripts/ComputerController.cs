@@ -118,14 +118,18 @@ public class ComputerController : MonoBehaviour
         isHoldingPower = false;
         currentHoldTime = 0f;
 
-        // Instantly kill the virus effects the moment the reboot triggers
         StopGlitch();
         Debug.Log("System Rebooting...");
         SetScreenState(rebootScreen);
 
+        // ---> NEW: TURN OFF THE CALLER ID CONTAINER <---
+        if (gameManager != null && gameManager.uiManager != null)
+        {
+            gameManager.uiManager.SetCallerContainerActive(false);
+        }
+
         if (currentCaller != null)
         {
-            // NEW V2 LOGIC: Tell GameManager to resolve the call safely!
             if (currentCaller.requiredAction == CorrectAction.Reboot)
             {
                 Debug.Log("Successfully rebooted to clear The Virus!");
@@ -143,6 +147,13 @@ public class ComputerController : MonoBehaviour
         Debug.Log("Reboot Complete. Back to Desktop.");
         SetScreenState(desktopScreen);
         isRebooting = false;
+
+        // ---> NEW: TURN IT BACK ON AND RESET TEXT TO IDLE <---
+        if (gameManager != null && gameManager.uiManager != null)
+        {
+            gameManager.uiManager.SetCallerContainerActive(true);
+            gameManager.uiManager.ClearCallerID();
+        }
     }
 
     private void SetScreenState(GameObject screenToShow)
@@ -160,17 +171,11 @@ public class ComputerController : MonoBehaviour
             screenToShow.SetActive(true);
         }
     }
-
+    
     private IEnumerator GlitchRoutine()
     {
         while (true)
         {
-            if (glitchRect != null)
-            {
-                float offsetX = Random.Range(-20f, 20f);
-                float offsetY = Random.Range(-20f, 20f);
-                glitchRect.anchoredPosition = originalGlitchPos + new Vector2(offsetX, offsetY);
-            }
 
             if (glitchImage != null)
             {
@@ -178,10 +183,11 @@ public class ComputerController : MonoBehaviour
                 glitchImage.color = harshColors[Random.Range(0, harshColors.Length)];
             }
 
-            yield return new WaitForSeconds(Random.Range(0.05f, 0.1f));
+            // Lowered the wait times so the colors flash much faster and more aggressively
+            yield return new WaitForSeconds(Random.Range(0.02f, 0.05f));
         }
     }
-
+    
     private void StopGlitch()
     {
         if (glitchRoutine != null)
