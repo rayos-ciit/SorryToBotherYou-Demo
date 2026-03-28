@@ -47,22 +47,30 @@ public class GameManager : MonoBehaviour
     {
         while (callsCompletedToday < totalCallsToday)
         {
-            yield return new WaitForSeconds(Random.Range(minDelayBetweenCalls, maxDelayBetweenCalls));
+            float waitTime = Random.Range(minDelayBetweenCalls, maxDelayBetweenCalls);
+            yield return new WaitForSeconds(waitTime);
+
+            // NEW: Pause the game loop! Do not ring the phone if the PC is currently rebooting.
+            if (computerController != null)
+            {
+                yield return new WaitUntil(() => !computerController.isRebooting);
+            }
 
             // Pick Caller (Debug or Random)
             activeCaller = debugForceType ? availableCallers.Find(c => c.typeOfCaller == debugForcedType) : PullCallerFromDeck();
             if (activeCaller == null) activeCaller = availableCallers[0];
 
             callInProgress = true;
-            phoneController.StartRinging(activeCaller);
-            computerController.OnCallStarted(activeCaller);
+            if (phoneController != null) phoneController.StartRinging(activeCaller);
+            if (computerController != null) computerController.OnCallStarted(activeCaller);
 
             yield return new WaitUntil(() => !callInProgress);
             
             callsCompletedToday++;
             uiManager.UpdateClock((float)callsCompletedToday / totalCallsToday);
-            uiManager.UpdateQuota(callsCompletedToday, totalCallsToday);
+            // (If you kept the Quota text, update it here)
         }
+
         EndShift();
     }
 
@@ -79,6 +87,10 @@ public class GameManager : MonoBehaviour
         }
 
         callInProgress = false;
+        
+        // NEW: Force the phone to auto-hangup and kill its SLA timer!
+        if (phoneController != null) phoneController.ResetPhoneState(); 
+        
         computerController.ResetMonitor();
         uiManager.ClearCallerID();
     }

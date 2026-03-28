@@ -91,11 +91,17 @@ public class PhoneController : MonoBehaviour
 
         isRinging = false;
         isOffHook = true;
-        phoneAudioSource.Stop(); 
+        if (phoneAudioSource != null) phoneAudioSource.Stop(); 
 
         Debug.Log("Picked up the receiver.");
-        
-        uiManager.SetPhoneVisualOffHook();
+        if (uiManager != null) uiManager.SetPhoneVisualOffHook();
+
+        // ---> THE CRITICAL CONNECTION <---
+        // This is the line that tells the computer to trigger the ambush!
+        if (gameManager != null && gameManager.computerController != null)
+        {
+            gameManager.computerController.OnPhonePickedUp();
+        }
 
         // INSTANT FAIL: Picking up The Disturbance
         if (currentCaller.requiredAction == CorrectAction.Ignore)
@@ -189,10 +195,17 @@ public class PhoneController : MonoBehaviour
 
     private void StopCallAudioAndTimer()
     {
-        dialogueSystem.StopDialogue();
-        if(slaRoutine != null) StopCoroutine(slaRoutine);
-        voiceAudioSource.Stop();
-        phoneAudioSource.Stop();
+        if (dialogueSystem != null) dialogueSystem.StopDialogue();
+        
+        // Explicitly destroy the timer
+        if (slaRoutine != null) 
+        { 
+            StopCoroutine(slaRoutine); 
+            slaRoutine = null; 
+        }
+        
+        if (voiceAudioSource != null) voiceAudioSource.Stop();
+        if (phoneAudioSource != null) phoneAudioSource.Stop();
     }
 
     private IEnumerator WaitToResolveHold()
@@ -209,13 +222,14 @@ public class PhoneController : MonoBehaviour
     // Safely puts the phone down automatically without triggering penalty logic
     public void ResetPhoneState()
     {
+        isRinging = false;
         isOffHook = false;
         isOnHold = false;
         
-        // Ensure all ringing/talking audio is completely stopped
+        // Ensure all timers and audio are killed instantly
         StopCallAudioAndTimer(); 
         
-        // Swap the art back to the base!
+        // Swap the art back to the base automatically
         if (uiManager != null)
         {
             uiManager.SetPhoneVisualOnBase();

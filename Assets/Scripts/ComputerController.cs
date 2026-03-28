@@ -26,7 +26,7 @@ public class ComputerController : MonoBehaviour
 
     private bool isHoldingPower = false;
     private float currentHoldTime = 0f;
-    private bool isRebooting = false;
+    public bool isRebooting = false;
     private CallerData currentCaller;
 
     void Awake()
@@ -45,25 +45,32 @@ public class ComputerController : MonoBehaviour
 
     public void OnCallStarted(CallerData caller)
     {
-        // Bulletproof: Force the object to be active just in case
         gameObject.SetActive(true); 
-        
         currentCaller = caller;
         
-        if (caller.causesScreenFlicker)
+        // SAFEGUARD: Only force the normal desktop if the PC isn't currently restarting!
+        if (!isRebooting) 
         {
-            Debug.Log("The Virus is invading! Monitor is glitching.");
-            SetScreenState(glitchScreen);
-            
-            if (!disableMonitorGlitch)
-            {
-                if (glitchRoutine == null) glitchRoutine = StartCoroutine(GlitchRoutine());
-                if (glitchAudioSource != null) glitchAudioSource.Play();
-            }
+            SetScreenState(desktopScreen); 
         }
-        else
+    }
+
+    public void OnPhonePickedUp()
+    {
+        if (currentCaller != null && currentCaller.causesScreenFlicker)
         {
-            SetScreenState(desktopScreen);
+            // SAFEGUARD: Don't trigger the virus glitch if the PC is restarting
+            if (!isRebooting)
+            {
+                Debug.Log("The Virus attacks! Monitor is glitching.");
+                SetScreenState(glitchScreen);
+                
+                if (!disableMonitorGlitch)
+                {
+                    if (glitchRoutine == null) glitchRoutine = StartCoroutine(GlitchRoutine());
+                    if (glitchAudioSource != null) glitchAudioSource.Play();
+                }
+            }
         }
     }
 
