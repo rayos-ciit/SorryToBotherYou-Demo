@@ -22,6 +22,10 @@ public class UIManager : MonoBehaviour
     public TMP_Text callerNameText;
     public TMP_Text callerNumberText;
     public string defaultIdleText = "SYSTEM IDLE...";
+    
+    [Header("Pre-Shift Setup")]
+    public GameObject startShiftButton;   // Drag your Monitor's Start Button here
+    public GameObject callerIDContainer;  // Drag the Parent Object of your Name/Number text here
 
     [Header("Shift Clock")]
     public TMP_Text digitalClockText;
@@ -48,11 +52,21 @@ public class UIManager : MonoBehaviour
 
     void Start()
     {
-        ClearCallerID();
         UpdateStrikes(0);
         UpdateClock(0f);
-        
         if (blackoutImage != null) blackoutImage.gameObject.SetActive(false);
+
+        // NEW: Setup the Pre-Shift Monitor State
+        if (startShiftButton != null) startShiftButton.SetActive(true);
+        if (callerIDContainer != null) callerIDContainer.SetActive(false); // Hide the Caller ID
+    }
+
+    // NEW: The Button will call this method to swap the UI!
+    public void ActivateShiftUI()
+    {
+        if (startShiftButton != null) startShiftButton.SetActive(false);
+        if (callerIDContainer != null) callerIDContainer.SetActive(true);
+        ClearCallerID(); // Set the text to "SYSTEM IDLE..." 
     }
 
     public void UpdateCallerID(string name, string number)

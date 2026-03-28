@@ -11,12 +11,8 @@ public class GameManager : MonoBehaviour
     
     [Header("Shift Settings")]
     public int currentDay = 1;
-    public int minCallsPerDay = 5;
-    public int maxCallsPerDay = 8;
-    
-    [Header("Pacing")]
-    public float minDelayBetweenCalls = 5.0f;
-    public float maxDelayBetweenCalls = 15.0f;
+    public int minCallsPerDay = 5, maxCallsPerDay = 8;
+    public float minDelayBetweenCalls = 5.0f, maxDelayBetweenCalls = 15.0f;
 
     [Header("The Deck")]
     public List<CallerData> availableCallers;
@@ -26,18 +22,18 @@ public class GameManager : MonoBehaviour
     public CallerType debugForcedType;
 
     public CallerData activeCaller { get; private set; }
-    private int totalCallsToday;
-    private int callsCompletedToday;
-    private int currentStrikes;
-    private int maxStrikesAllowed;
+    private int totalCallsToday, callsCompletedToday, currentStrikes, maxStrikesAllowed;
     private bool callInProgress = false;
 
-    void Start() { StartShift(); }
+    void Start() 
+    { 
+        // Do nothing! Let the player read the rulebook.
+        Debug.Log("Pre-shift phase. Waiting for player to clock in...");
+    }
 
     public void StartShift()
     {
-        currentStrikes = 0;
-        callsCompletedToday = 0;
+        currentStrikes = callsCompletedToday = 0;
         totalCallsToday = Random.Range(minCallsPerDay, maxCallsPerDay + 1);
         maxStrikesAllowed = Mathf.CeilToInt(totalCallsToday * 0.6f);
         StartCoroutine(ShiftRoutine());
@@ -47,34 +43,27 @@ public class GameManager : MonoBehaviour
     {
         while (callsCompletedToday < totalCallsToday)
         {
-            float waitTime = Random.Range(minDelayBetweenCalls, maxDelayBetweenCalls);
-            yield return new WaitForSeconds(waitTime);
+            yield return new WaitForSeconds(Random.Range(minDelayBetweenCalls, maxDelayBetweenCalls));
+            
+            if (computerController != null) yield return new WaitUntil(() => !computerController.isRebooting);
 
-            // NEW: Pause the game loop! Do not ring the phone if the PC is currently rebooting.
-            if (computerController != null)
-            {
-                yield return new WaitUntil(() => !computerController.isRebooting);
-            }
-
-            // Pick Caller (Debug or Random)
-            activeCaller = debugForceType ? availableCallers.Find(c => c.typeOfCaller == debugForcedType) : PullCallerFromDeck();
-            if (activeCaller == null) activeCaller = availableCallers[0];
+            // One line selection checking for debug!
+            activeCaller = debugForceType 
+                ? availableCallers.Find(c => c.typeOfCaller == debugForcedType) ?? PullCallerFromDeck()
+                : PullCallerFromDeck();
 
             callInProgress = true;
-            if (phoneController != null) phoneController.StartRinging(activeCaller);
-            if (computerController != null) computerController.OnCallStarted(activeCaller);
+            phoneController?.StartRinging(activeCaller);
+            computerController?.OnCallStarted(activeCaller);
 
             yield return new WaitUntil(() => !callInProgress);
             
             callsCompletedToday++;
-            uiManager.UpdateClock((float)callsCompletedToday / totalCallsToday);
-            // (If you kept the Quota text, update it here)
+            uiManager?.UpdateClock((float)callsCompletedToday / totalCallsToday);
         }
-
-        EndShift();
+        uiManager?.ShowShiftComplete(currentDay);
     }
 
-    // THE CENTRAL SYSTEM: All successes/fails come through here
     public void ResolveCall(bool success)
     {
         if (!callInProgress) return;
@@ -82,29 +71,24 @@ public class GameManager : MonoBehaviour
         if (!success)
         {
             currentStrikes++;
-            uiManager.UpdateStrikes(currentStrikes);
-            if (currentStrikes >= maxStrikesAllowed) TriggerGameOver();
+            uiManager?.UpdateStrikes(currentStrikes);
+            if (currentStrikes >= maxStrikesAllowed) { uiManager?.ShowGameOver(); StopAllCoroutines(); }
         }
 
         callInProgress = false;
-        
-        // NEW: Force the phone to auto-hangup and kill its SLA timer!
-        if (phoneController != null) phoneController.ResetPhoneState(); 
-        
-        computerController.ResetMonitor();
-        uiManager.ClearCallerID();
+        phoneController?.ResetPhoneState(); 
+        computerController?.ResetMonitor();
+        uiManager?.ClearCallerID();
     }
 
     private CallerData PullCallerFromDeck()
     {
-        int totalWeight = 0;
-        foreach (var c in availableCallers) totalWeight += c.spawnWeight;
+        int totalWeight = 0, sum = 0;
+        availableCallers.ForEach(c => totalWeight += c.spawnWeight); // Condensed weight math
+        
         int roll = Random.Range(0, totalWeight);
-        int sum = 0;
-        foreach (var c in availableCallers) { sum += c.spawnWeight; if (roll < sum) return c; }
-        return availableCallers[0];
+        foreach (var c in availableCallers) if (roll < (sum += c.spawnWeight)) return c;
+        
+        return availableCallers[0]; // Fallback
     }
-
-    private void TriggerGameOver() { uiManager.ShowGameOver(); StopAllCoroutines(); }
-    private void EndShift() { uiManager.ShowShiftComplete(currentDay); }
 }
