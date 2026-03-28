@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
     public CallerData activeCaller { get; private set; }
     private int totalCallsToday, callsCompletedToday, currentStrikes, maxStrikesAllowed;
     private bool callInProgress = false;
+    private bool hasShiftStarted = false;
 
     void Start() 
     { 
@@ -33,6 +34,10 @@ public class GameManager : MonoBehaviour
 
     public void StartShift()
     {
+        // If the shift is already running, block the button from doing anything!
+        if (hasShiftStarted) return; 
+        hasShiftStarted = true;
+
         currentStrikes = callsCompletedToday = 0;
         totalCallsToday = Random.Range(minCallsPerDay, maxCallsPerDay + 1);
         maxStrikesAllowed = Mathf.CeilToInt(totalCallsToday * 0.6f);

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1708d0f7b0ebdb41a044c506c914073, type: 3}
   m_Name: KarenSmith_Impatient 1
   m_EditorClassIdentifier: Assembly-CSharp::CallerData
+  canMaskCallerID: 0
   callerName: Karen Smith
   callerNumber: 555-8821
-  canMaskCallerID: 0
   typeOfCaller: 1
   spawnWeight: 6
   requiredAction: 0
@@ -23,10 +23,17 @@ MonoBehaviour:
   ringSFX: {fileID: 0}
   voiceSFX: {fileID: 0}
   causesScreenFlicker: 0
-  dialogueLines:
-  - '"Finally! Do you have any idea how long I''ve been on hold?"'
-  - '"The computer I bought from you people keeps completely shutting off randomly."'
-  - '"Look, I already know it''s a faulty power supply unit. I don''t need you to
-    read me some generic troubleshooting script."'
-  - '"Just process the replacement for the PSU right now before I escalate this to
-    your manager."'
+  dialogueVariations:
+  - lines:
+    - '"Finally! Do you have any idea how long I''ve been waiting to get through?!"'
+    - '"I demand to speak to your shift supervisor immediately."'
+    - '"Actually, forget it. You people are completely useless. Cancel my account!"'
+  - lines:
+    - '"Look, I have exactly two minutes before my train gets here so type fast."'
+    - '"Just confirm that my payment went through. Did it?"'
+    - '"Good. That''s all I needed. Send me the email receipt."'
+  - lines:
+    - '"This is the third time I''ve had to call this week!"'
+    - '"Every time I call, I get put on hold and then mysteriously disconnected."'
+    - '"Make sure this ticket is marked as resolved, or I''m calling the Better Business
+      Bureau!"'

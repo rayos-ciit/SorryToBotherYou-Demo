@@ -23,4 +23,21 @@ MonoBehaviour:
   ringSFX: {fileID: 0}
   voiceSFX: {fileID: 0}
   causesScreenFlicker: 0
-  dialogueVariations: []
+  dialogueVariations:
+  - lines:
+    - '"Hello. We have been trying to reach you regarding your car''s extended warranty."'
+    - '"Our records indicate that your vehicle was recently involved in a fatal accident."'
+    - '"Would you like to upgrade your policy to cover the cost of your funeral?"'
+    - '"Please provide your credit card number to proceed."'
+  - lines:
+    - '"Hi there! I''m calling to ask a few quick questions about your current internet
+      provider."'
+    - '"Question one: Are you aware that your connection is unsecured?"'
+    - '"Question two: Did you know I can see everything on your monitor?"'
+    - '"Question three: Why haven''t you hung up the phone yet?"'
+  - lines:
+    - '"Congratulations! Your exact desk extension has been selected for our premium
+      home security package."'
+    - '"We guarantee complete, 24/7 physical monitoring of your every movement."'
+    - '"In fact, our installation representative is already inside your office building."'
+    - '"Please stay on the line while he approaches your door."'

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1708d0f7b0ebdb41a044c506c914073, type: 3}
   m_Name: JohnCaller_Normal
   m_EditorClassIdentifier: Assembly-CSharp::CallerData
+  canMaskCallerID: 0
   callerName: John Caller
   callerNumber: 555-0192
-  canMaskCallerID: 0
   typeOfCaller: 0
   spawnWeight: 10
   requiredAction: 0
@@ -23,8 +23,16 @@ MonoBehaviour:
   ringSFX: {fileID: 0}
   voiceSFX: {fileID: 0}
   causesScreenFlicker: 0
-  dialogueLines:
-  - '"Good evening. Employee. I am calling to update my user information."'
-  - '"My previous address is no longer... compatible. I need to change it."'
-  - '"Please input the new zip code. It is... wait, I can''t remember."'
-  - '"Nevermind. The old address will do. Have a productive cycle."'
+  dialogueVariations:
+  - lines:
+    - '"Hello? Is this the support line for that... Foodika app?"'
+    - '"I''m trying to find a decent local restaurant, but the map just keeps spinning."'
+    - '"Oh, wait. Never mind. I forgot to turn my location on. Sorry to bother you."'
+  - lines:
+    - '"Hi, yes, I received a missed call from this number?"'
+    - '"No? Are you sure? It''s showing up right here on my caller ID."'
+    - '"Well, alright then. Have a good night, I guess."'
+  - lines:
+    - '"Good evening. I''m calling to update my billing address on file."'
+    - '"Actually, wait... I think my wife already did it this morning."'
+    - '"Let me just check... yes, she did. My mistake. Thank you for your time."'

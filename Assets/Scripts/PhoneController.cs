@@ -29,7 +29,6 @@ public class PhoneController : MonoBehaviour
         
         uiManager?.SetPhoneVisualOnBase();
 
-        // One-line logic to determine if Caller ID should be masked
         string cName = (caller.canMaskCallerID && Random.value > 0.5f) ? "UNKNOWN" : caller.callerName;
         string cNum  = (caller.canMaskCallerID && Random.value > 0.5f) ? "UNKNOWN" : caller.callerNumber;
         uiManager?.UpdateCallerID(cName, cNum);
@@ -41,7 +40,11 @@ public class PhoneController : MonoBehaviour
             phoneAudioSource.Play();
         }
 
-        RestartSLA(RingTimeoutRoutine(caller.timeLimitToRespond));
+        // ---> THE STREAMLINED FIX <---
+        // If the caller has a specific limit (like Karen's 7s), use it. 
+        // If it is 0 (like John), use the global SLA Timer!
+        float ringTime = caller.timeLimitToRespond > 0 ? caller.timeLimitToRespond : slaTimeLimit;
+        RestartSLA(RingTimeoutRoutine(ringTime));
     }
 
     private IEnumerator RingTimeoutRoutine(float timeLimit)

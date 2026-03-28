@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1708d0f7b0ebdb41a044c506c914073, type: 3}
   m_Name: Unknown_Listener
   m_EditorClassIdentifier: Assembly-CSharp::CallerData
+  canMaskCallerID: 1
   callerName: Unknown
   callerNumber: 000-0000
-  canMaskCallerID: 1
   typeOfCaller: 3
   spawnWeight: 4
   requiredAction: 1
@@ -23,8 +23,21 @@ MonoBehaviour:
   ringSFX: {fileID: 0}
   voiceSFX: {fileID: 0}
   causesScreenFlicker: 0
-  dialogueLines:
-  - '[Heavy, rhythmic static on the line]'
-  - ...
-  - '[Wet, labored breathing]'
-  - ...I know you're not allowed to hang up on me..."
+  dialogueVariations:
+  - lines:
+    - '"Hello... it''s so nice to hear another human voice."'
+    - '"It gets very quiet in my building. Do you work alone at this hour?"'
+    - '"Are there... windows in your office?"'
+    - '"I''d like to know exactly where you are sitting."'
+  - lines:
+    - '"I have a question about the software..."'
+    - '"But first, can you hear that tapping sound?"'
+    - '"It sounds like it''s coming from inside the walls of your booth."'
+    - '"Put your ear against the glass."'
+  - lines:
+    - '"Thank you for answering. My name is... well, it doesn''t matter."'
+    - '"I''ve been watching the streetlights flicker outside."'
+    - '"I''m looking up at a very tall corporate building..."'
+    - '"Which floor are you on?"'
+  - lines:
+    - '"Are there... windows in your office?"'
