@@ -28,31 +28,55 @@ public class PhoneController : MonoBehaviour
     {
         currentCaller = caller;
         isRinging = true;
-        isOffHook = false;
-        isOnHold = false;
+        
+        if (uiManager != null) uiManager.SetPhoneVisualOnBase();
 
-        // Visual Sabotage: The "False Positive" Caller ID
+        // 50% chance to mask the Caller ID to "UNKNOWN" if the caller allows it
         if (caller.canMaskCallerID && Random.value > 0.5f)
         {
-            Debug.Log("UI Sabotage: Caller ID reads UNKNOWN - UNKNOWN");
-            uiManager.UpdateCallerID("UNKNOWN", "UNKNOWN");
+            if (uiManager != null) uiManager.UpdateCallerID("UNKNOWN", "UNKNOWN");
         }
         else
         {
-            Debug.Log($"Caller ID reads: {caller.callerName} - {caller.callerNumber}");
-            uiManager.UpdateCallerID(caller.callerName, caller.callerNumber);
+            if (uiManager != null) uiManager.UpdateCallerID(caller.callerName, caller.callerNumber);
         }
 
-        if (caller.ringSFX != null)
+        if (phoneAudioSource != null && caller.ringSFX != null)
         {
             phoneAudioSource.clip = caller.ringSFX;
             phoneAudioSource.loop = true;
             phoneAudioSource.Play();
         }
 
-        // Start the SLA Timer! (Shorter if it's The Impatient)
-        float timer = caller.requiresQuickResponse ? caller.timeLimitToRespond : slaTimeLimit;
-        slaRoutine = StartCoroutine(SLATimerRoutine(timer));
+        // NEW: Start a timer! If the player ignores the phone, what happens?
+        if (slaRoutine != null) StopCoroutine(slaRoutine);
+        slaRoutine = StartCoroutine(RingTimeoutRoutine(caller.timeLimitToRespond));
+    }
+
+    // NEW: Handles what happens if the player never picks up the phone
+    private IEnumerator RingTimeoutRoutine(float timeLimit)
+    {
+        yield return new WaitForSeconds(timeLimit);
+        
+        if (isRinging) 
+        {
+            Debug.Log("The phone stopped ringing.");
+            isRinging = false;
+            if (phoneAudioSource != null) phoneAudioSource.Stop();
+            
+            // Did they successfully ignore a Disturbance?
+            if (currentCaller.requiredAction == CorrectAction.Ignore)
+            {
+                Debug.Log("Successfully ignored the Disturbance!");
+                gameManager.ResolveCall(true);
+            }
+            else
+            {
+                // They ignored a normal caller or a Mimic!
+                Debug.Log("You missed a call you were supposed to answer! STRIKE!");
+                gameManager.ResolveCall(false);
+            }
+        }
     }
 
     private IEnumerator SLATimerRoutine(float timeLimit)
@@ -92,35 +116,40 @@ public class PhoneController : MonoBehaviour
         isRinging = false;
         isOffHook = true;
         if (phoneAudioSource != null) phoneAudioSource.Stop(); 
+        
+        // Stop the ringing timeout!
+        if (slaRoutine != null) StopCoroutine(slaRoutine); 
 
         Debug.Log("Picked up the receiver.");
         if (uiManager != null) uiManager.SetPhoneVisualOffHook();
 
-        // ---> THE CRITICAL CONNECTION <---
-        // This is the line that tells the computer to trigger the ambush!
         if (gameManager != null && gameManager.computerController != null)
         {
             gameManager.computerController.OnPhonePickedUp();
         }
 
-        // INSTANT FAIL: Picking up The Disturbance
+        // ---> THE DISTURBANCE PENALTY <---
         if (currentCaller.requiredAction == CorrectAction.Ignore)
         {
-            if(slaRoutine != null) StopCoroutine(slaRoutine);
-            Debug.Log("Lethal sensory overload triggered! You picked up The Disturbance.");
+            Debug.Log("You answered a Disturbance! STRIKE!");
+            if (voiceAudioSource != null && currentCaller.voiceSFX != null)
+            {
+                voiceAudioSource.PlayOneShot(currentCaller.voiceSFX); 
+            }
             gameManager.ResolveCall(false);
             return;
         }
 
-        // Audio Subtlety: Play the voice/breathing so the player can investigate
-        if (currentCaller.voiceSFX != null)
+        // ---> THE MIMIC TRAP (UPDATED) <---
+        if (currentCaller.typeOfCaller == CallerType.Mimic)
         {
-            voiceAudioSource.clip = currentCaller.voiceSFX;
-            voiceAudioSource.loop = true;
-            voiceAudioSource.Play();
+            Debug.Log("It's a MIMIC! You have until the dialogue finishes to hang up!");
+            // Notice how we removed the timer and the "return;"? 
+            // We want it to fall through to the dialogue system below!
         }
-        
-        // Note: The SLA Timer keeps ticking in the background! They must act fast.
+
+        // Normal Caller Logic (This will now run for Mimics too, typing out their text!)
+        if (dialogueSystem != null) dialogueSystem.StartDialogue(currentCaller);
     }
 
     public void PressTalk()
@@ -170,27 +199,21 @@ public class PhoneController : MonoBehaviour
     public void HangUpPhone()
     {
         if (!isOffHook) return;
-        
-        StopCallAudioAndTimer();
-        isOffHook = false;
-        isOnHold = false;
 
-        Debug.Log("Hung up the phone.");
-        
-        uiManager.SetPhoneVisualOnBase();
+        Debug.Log("Player slammed the phone down.");
+        if (voiceAudioSource != null) voiceAudioSource.loop = false;
 
-        // This is where the player successfully defeats The Mimic!
-        if (currentCaller.requiredAction == CorrectAction.HangUp)
+        // Check if slamming the phone was the correct action (Mimic)
+        if (currentCaller != null && currentCaller.requiredAction == CorrectAction.HangUp)
         {
-            Debug.Log("Correctly slammed the phone down on the entity!");
+            Debug.Log("Successfully disconnected the Mimic!");
             gameManager.ResolveCall(true);
         }
         else
         {
-            Debug.Log("Hung up on a normal client! Strike earned.");
+            Debug.Log("You hung up on a valid client! STRIKE!");
             gameManager.ResolveCall(false);
         }
-        uiManager.ClearCallerID();
     }
 
     private void StopCallAudioAndTimer()
@@ -235,4 +258,5 @@ public class PhoneController : MonoBehaviour
             uiManager.SetPhoneVisualOnBase();
         }
     }
+    
 }

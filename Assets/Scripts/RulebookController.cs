@@ -5,6 +5,10 @@ public class RulebookController : MonoBehaviour
     [Header("UI Elements")]
     public GameObject rulebookCanvas;
     
+    // NEW: The physical book sitting on the desk!
+    [Tooltip("Drag the GameObject representing the closed book on your desk here.")]
+    public GameObject deskRulebookIcon; 
+    
     [Tooltip("Drag all of your rulebook page UI Panels here IN ORDER.")]
     public GameObject[] pages;
     
@@ -28,13 +32,21 @@ public class RulebookController : MonoBehaviour
         if (ambientAudioSource != null) originalAmbientVol = ambientAudioSource.volume;
         if (phoneAudioSource != null) originalPhoneVol = phoneAudioSource.volume;
         
+        // Ensure the game starts with the UI closed and the desk item visible
         rulebookCanvas.SetActive(false);
+        if (deskRulebookIcon != null) deskRulebookIcon.SetActive(true);
     }
 
     public void ToggleRulebook()
     {
         isBookOpen = !isBookOpen;
         rulebookCanvas.SetActive(isBookOpen);
+        
+        // NEW: Hide the desk book if the UI is open, and show it if the UI is closed!
+        if (deskRulebookIcon != null)
+        {
+            deskRulebookIcon.SetActive(!isBookOpen);
+        }
         
         if (isBookOpen)
         {

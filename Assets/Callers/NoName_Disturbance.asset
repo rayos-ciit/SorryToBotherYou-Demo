@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1708d0f7b0ebdb41a044c506c914073, type: 3}
   m_Name: NoName_Disturbance
   m_EditorClassIdentifier: Assembly-CSharp::CallerData
+  canMaskCallerID: 0
   callerName: theonlywayoutisdeaththeonlywayoutisdeaththeonlywayoutisdeath
   callerNumber: pickthephoneuppleasepickthephoneupplease
-  canMaskCallerID: 0
   typeOfCaller: 5
   spawnWeight: 2
   requiredAction: 4
   requiresQuickResponse: 0
-  timeLimitToRespond: 0
+  timeLimitToRespond: 5
   ringSFX: {fileID: 0}
   voiceSFX: {fileID: 0}
   causesScreenFlicker: 0
-  dialogueLines: []
+  dialogueVariations: []

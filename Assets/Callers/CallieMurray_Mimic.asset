@@ -12,22 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1708d0f7b0ebdb41a044c506c914073, type: 3}
   m_Name: CallieMurray_Mimic
   m_EditorClassIdentifier: Assembly-CSharp::CallerData
+  canMaskCallerID: 1
   callerName: 555-0192
   callerNumber: Callie Murray
-  canMaskCallerID: 1
   typeOfCaller: 2
   spawnWeight: 4
   requiredAction: 3
   requiresQuickResponse: 0
-  timeLimitToRespond: 0
+  timeLimitToRespond: 7
   ringSFX: {fileID: 0}
   voiceSFX: {fileID: 0}
   causesScreenFlicker: 0
-  dialogueLines:
-  - '"Hello? Yes, am I speaking to the primary resident? I am calling on behalf of
-    the company."'
-  - '"We noticed you are eligible for a premium upgrade to your... current cycle."'
-  - '"This package includes complete removal of all auditory hallucinations, and
-    a new set of skin."'
-  - '"Why haven''t you hung up yet? I''m almost done tracing your cubicle number."'
   dialogueVariations: []
