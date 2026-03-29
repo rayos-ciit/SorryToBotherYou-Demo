@@ -16,19 +16,12 @@ public class DialogueSystem : MonoBehaviour
     private int currentLineIndex = 0;
     private bool isTyping = false;
     private bool useScrambler = false;
+    private Coroutine typingRoutine; // ---> NEW: Tracks the active coroutine
     
     void Start()
     {
-        // Force the dialogue box to hide itself the moment the game launches!
-        if (dialogueBoxUI != null) 
-        {
-            dialogueBoxUI.SetActive(false);
-        }
-        
-        if (dialogueText != null) 
-        {
-            dialogueText.text = "";
-        }
+        if (dialogueBoxUI != null) dialogueBoxUI.SetActive(false);
+        if (dialogueText != null) dialogueText.text = "";
     }
 
     public void StartDialogue(CallerData caller)
@@ -43,23 +36,46 @@ public class DialogueSystem : MonoBehaviour
         if (voiceAudioSource != null) voiceAudioSource.clip = caller.voiceSFX;
 
         dialogueBoxUI.SetActive(true);
-        StartCoroutine(TypeSentence(currentLines[0]));
+        
+        if (typingRoutine != null) StopCoroutine(typingRoutine);
+        typingRoutine = StartCoroutine(TypeSentence(currentLines[0]));
     }
 
     public void DisplayNextLine()
     {
-        // ---> THE FIX: Block the Talk button if the phone is on hold <---
         if (phoneController != null && phoneController.isOnHold)
         {
             Debug.Log("Cannot talk while the caller is on hold!");
             return;
         }
 
-        if (isTyping) { isTyping = false; return; } // Simple skip logic
+        // ---> NEW: Tell the phone we are actively talking so they don't hang up!
+        if (phoneController != null) phoneController.ResetSLAForTalking();
+
+        // ---> REWRITTEN: Bulletproof skip logic
+        if (isTyping) 
+        { 
+            // 1. Forceably murder the typing coroutine so it doesn't wake up
+            if (typingRoutine != null) StopCoroutine(typingRoutine);
+            
+            // 2. Instantly display the full text and stop the voice
+            dialogueText.text = currentLines[currentLineIndex];
+            isTyping = false;
+            if (voiceAudioSource != null) voiceAudioSource.Stop();
+            
+            return; 
+        } 
 
         currentLineIndex++;
-        if (currentLineIndex < currentLines.Length) StartCoroutine(TypeSentence(currentLines[currentLineIndex]));
-        else EndDialogue();
+        if (currentLineIndex < currentLines.Length) 
+        {
+            if (typingRoutine != null) StopCoroutine(typingRoutine);
+            typingRoutine = StartCoroutine(TypeSentence(currentLines[currentLineIndex]));
+        }
+        else 
+        {
+            EndDialogue();
+        }
     }
 
     private IEnumerator TypeSentence(string sentence)
@@ -67,33 +83,27 @@ public class DialogueSystem : MonoBehaviour
         dialogueText.text = "";
         isTyping = true;
 
-        // ---> NEW: Start playing their voice clip! <---
         if (voiceAudioSource != null && voiceAudioSource.clip != null) voiceAudioSource.Play();
 
         foreach (char letter in sentence)
         {
-            if (!isTyping) { dialogueText.text = sentence; break; } // Skip typing
             dialogueText.text += letter;
-            
-            // (The PlayOneShot blip was deleted from right here!)
-            
             yield return new WaitForSeconds(typingSpeed);
         }
+        
         isTyping = false;
-
-        // ---> NEW: Stop playing their voice once the text finishes typing! <---
         if (voiceAudioSource != null) voiceAudioSource.Stop();
     }
 
     private void EndDialogue()
     {
         dialogueBoxUI.SetActive(false);
-        // Just report back to GameManager
         gameManager.ResolveCall(gameManager.activeCaller.requiredAction == CorrectAction.Talk);
     }
 
     public void StopDialogue()
     {
+        if (typingRoutine != null) StopCoroutine(typingRoutine);
         StopAllCoroutines();
         isTyping = false;
         if (voiceAudioSource != null) voiceAudioSource.Stop();

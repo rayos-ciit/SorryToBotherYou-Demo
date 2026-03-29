@@ -192,4 +192,12 @@ public class PhoneController : MonoBehaviour
         Debug.Log(success ? "Successfully kept Listener on hold." : "Held a valid client! STRIKE!");
         gameManager?.ResolveCall(success);
     }
+    
+    public void ResetSLAForTalking()
+    {
+        if (isOffHook && !isOnHold)
+        {
+            RestartSLA(SLATimerRoutine(slaTimeLimit));
+        }
+    }
 }

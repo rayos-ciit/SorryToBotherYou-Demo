@@ -7,18 +7,23 @@ public class ComputerController : MonoBehaviour
     [Header("Connections")]
     public GameManager gameManager;
     
-    [Header("Screen States (Assign GameObjects)")]
+    [Header("Screen States")]
     public GameObject desktopScreen;
     public GameObject glitchScreen;
     public GameObject rebootScreen;
 
     [Header("Glitch Effect Settings")]
     public AudioSource glitchAudioSource;
-    private Image glitchImage;
+    public AudioClip rebootButtonClip; 
+    
+    [Tooltip("Drag the specific Image component you want to violently flash colors here!")]
+    public Image glitchImage; // ---> NEW: Now explicitly public!
+    
+    public bool disableMonitorGlitch = false;
+
     private RectTransform glitchRect;
     private Vector2 originalGlitchPos;
     private Coroutine glitchRoutine;
-    public bool disableMonitorGlitch = false;
 
     [Header("Reboot Mechanics")]
     public float requiredHoldTimeToReboot = 2.0f;
@@ -31,15 +36,15 @@ public class ComputerController : MonoBehaviour
 
     void Awake()
     {
-        // Grab the components off the glitch screen so we can manipulate them
         if (glitchScreen != null)
         {
-            glitchImage = glitchScreen.GetComponent<Image>();
+            // If you forget to assign it in the inspector, it will try to find it in the children!
+            if (glitchImage == null) glitchImage = glitchScreen.GetComponentInChildren<Image>();
+            
             glitchRect = glitchScreen.GetComponent<RectTransform>();
             if (glitchRect != null) originalGlitchPos = glitchRect.anchoredPosition;
         }
         
-        // Always start the game looking at the clean desktop!
         SetScreenState(desktopScreen);
     }
 
@@ -48,7 +53,6 @@ public class ComputerController : MonoBehaviour
         gameObject.SetActive(true); 
         currentCaller = caller;
         
-        // SAFEGUARD: Only force the normal desktop if the PC isn't currently restarting!
         if (!isRebooting) 
         {
             SetScreenState(desktopScreen); 
@@ -59,7 +63,6 @@ public class ComputerController : MonoBehaviour
     {
         if (currentCaller != null && currentCaller.causesScreenFlicker)
         {
-            // SAFEGUARD: Don't trigger the virus glitch if the PC is restarting
             if (!isRebooting)
             {
                 Debug.Log("The Virus attacks! Monitor is glitching.");
@@ -86,7 +89,6 @@ public class ComputerController : MonoBehaviour
 
     void Update()
     {
-        // If the player is holding the power button, count up the timer
         if (isHoldingPower && !isRebooting)
         {
             currentHoldTime += Time.deltaTime;
@@ -98,14 +100,18 @@ public class ComputerController : MonoBehaviour
         }
     }
 
-    // Call this from your UI Button's "Pointer Down" event
     public void PointerDownPowerButton()
     {
         if (isRebooting) return; 
+        
+        if (rebootButtonClip != null && glitchAudioSource != null) 
+        {
+            glitchAudioSource.PlayOneShot(rebootButtonClip);
+        }
+
         isHoldingPower = true;
     }
 
-    // Call this from your UI Button's "Pointer Up" event
     public void PointerUpPowerButton()
     {
         isHoldingPower = false;
@@ -122,7 +128,6 @@ public class ComputerController : MonoBehaviour
         Debug.Log("System Rebooting...");
         SetScreenState(rebootScreen);
 
-        // ---> NEW: TURN OFF THE CALLER ID CONTAINER <---
         if (gameManager != null && gameManager.uiManager != null)
         {
             gameManager.uiManager.SetCallerContainerActive(false);
@@ -148,7 +153,6 @@ public class ComputerController : MonoBehaviour
         SetScreenState(desktopScreen);
         isRebooting = false;
 
-        // ---> NEW: TURN IT BACK ON AND RESET TEXT TO IDLE <---
         if (gameManager != null && gameManager.uiManager != null)
         {
             gameManager.uiManager.SetCallerContainerActive(true);
@@ -158,14 +162,10 @@ public class ComputerController : MonoBehaviour
 
     private void SetScreenState(GameObject screenToShow)
     {
-        // 1. ALWAYS keep the monitor frame / desktop turned ON
         if (desktopScreen != null) desktopScreen.SetActive(true);
-
-        // 2. Hide the conditional screens 
         if (glitchScreen != null) glitchScreen.SetActive(false);
         if (rebootScreen != null) rebootScreen.SetActive(false);
 
-        // 3. If we need to show a special screen (like Glitch or Reboot), turn it on over the desktop!
         if (screenToShow != null && screenToShow != desktopScreen)
         {
             screenToShow.SetActive(true);
@@ -176,14 +176,11 @@ public class ComputerController : MonoBehaviour
     {
         while (true)
         {
-
             if (glitchImage != null)
             {
                 Color[] harshColors = { Color.red, Color.magenta, Color.green, Color.yellow, Color.white, Color.cyan };
                 glitchImage.color = harshColors[Random.Range(0, harshColors.Length)];
             }
-
-            // Lowered the wait times so the colors flash much faster and more aggressively
             yield return new WaitForSeconds(Random.Range(0.02f, 0.05f));
         }
     }

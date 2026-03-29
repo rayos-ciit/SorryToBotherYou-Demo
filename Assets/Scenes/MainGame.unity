@@ -214,6 +214,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1041556510}
+  - {fileID: 687817575}
   - {fileID: 590309923}
   - {fileID: 1937076924}
   - {fileID: 346827283}
@@ -230,7 +231,6 @@ RectTransform:
   - {fileID: 1993807127}
   - {fileID: 1762524742}
   - {fileID: 636704471}
-  - {fileID: 687817575}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2793,7 +2793,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &509859693
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3672,6 +3672,8 @@ MonoBehaviour:
   glitchScreen: {fileID: 509859692}
   rebootScreen: {fileID: 1635363317}
   glitchAudioSource: {fileID: 1259194947}
+  rebootButtonClip: {fileID: 8300000, guid: 1432cc061d6bd40438677c05dc5c62b8, type: 3}
+  glitchImage: {fileID: 509859694}
   disableMonitorGlitch: 0
   requiredHoldTimeToReboot: 2
   rebootDuration: 4
@@ -6453,8 +6455,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e7f41ac0d548d424383c7a07d1d267d2, type: 2}
   - {fileID: 11400000, guid: d13594900b215e54dac4c87a6900c9c5, type: 2}
   - {fileID: 11400000, guid: 3588296b507fe9b4bb892ed38e252947, type: 2}
-  debugForceType: 0
-  debugForcedType: 2
+  debugForceType: 1
+  debugForcedType: 4
 --- !u!4 &1247691766
 Transform:
   m_ObjectHideFlags: 0
@@ -7280,7 +7282,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: -7293659724512229199, guid: a5908a25fbbc48d42a0aa809268ac31e, type: 2}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 3275e3054009c3b44a4991106d974178, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -9061,7 +9063,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1635363318
 RectTransform:
   m_ObjectHideFlags: 0

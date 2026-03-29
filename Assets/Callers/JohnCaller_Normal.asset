@@ -16,13 +16,15 @@ MonoBehaviour:
   callerName: John Caller
   callerNumber: 555-0192
   typeOfCaller: 0
-  spawnWeight: 10
+  spawnWeight: 8
   requiredAction: 0
   requiresQuickResponse: 0
   timeLimitToRespond: 0
   ringSFX: {fileID: 8300000, guid: 7119e83e83291844f93eae3e67d4b10d, type: 3}
   voiceSFX: {fileID: 8300000, guid: 9ecb88c56cb57ca4dab84b981510be8d, type: 3}
+  ambientSFX: {fileID: 0}
   causesScreenFlicker: 0
+  monsterSprite: {fileID: 0}
   dialogueVariations:
   - lines:
     - '"Hello? Is this the support line for that... Foodika app?"'
