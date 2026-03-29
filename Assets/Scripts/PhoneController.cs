@@ -70,6 +70,9 @@ public class PhoneController : MonoBehaviour
         uiManager?.SetPhoneVisualOffHook();
         RestartSLA(SLATimerRoutine(slaTimeLimit));
 
+        // ---> THE FIX: Tell the computer the receiver was just picked up! <---
+        gameManager?.computerController?.OnPhonePickedUp();
+
         // 2. The Disturbance Jumpscare Trap!
         if (currentCaller != null && currentCaller.typeOfCaller == CallerType.Disturbance)
         {
@@ -167,10 +170,20 @@ public class PhoneController : MonoBehaviour
     private IEnumerator RingTimeoutRoutine(float limit)
     {
         yield return new WaitForSeconds(limit);
+        
         if (isRinging)
         {
-            Debug.Log("Missed call! STRIKE!");
-            gameManager?.ResolveCall(false);
+            // ---> THE FIX: Check if ignoring the call was actually the correct move! <---
+            if (currentCaller != null && currentCaller.typeOfCaller == CallerType.Disturbance)
+            {
+                Debug.Log("Successfully ignored a Disturbance! Good job.");
+                gameManager?.ResolveCall(true); // You survive the encounter!
+            }
+            else
+            {
+                Debug.Log("Missed a valid client call! STRIKE!");
+                gameManager?.ResolveCall(false); // You lose an actual client
+            }
         }
     }
 
