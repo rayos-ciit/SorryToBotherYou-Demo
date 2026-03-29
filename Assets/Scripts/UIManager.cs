@@ -31,12 +31,15 @@ public class UIManager : MonoBehaviour
     public TMP_Text digitalClockText;
     
     [Header("Blackout Strike Effect")]
-    public AudioSource strikeAudioSource; // The Death Bell
+    public AudioSource strikeAudioSource;
+    public AudioClip deathBellClip; // ---> NEW: The Bell
+    public AudioClip heartbeatClip; // ---> NEW: The Heartbeat
     public UnityEngine.UI.Image blackoutImage; // The black screen
     [Tooltip("How fast the eyes fade to black and back.")]
     public float blinkSpeed = 5f;
     [Tooltip("How many times the screen flashes black per strike.")]
     public int blinkCount = 2;
+    public UnityEngine.UI.Image monsterPulseImage; // ---> NEW: The Monster that flashes!
     
     [Header("Victory Sequence")]
     public AudioSource victoryAlarmAudio;
@@ -114,42 +117,76 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void UpdateStrikes(int currentStrikes)
+   public void UpdateStrikes(int currentStrikes, CallerData caller = null)
     {
         if (currentStrikes > 0)
         {
-            if (strikeAudioSource != null) strikeAudioSource.Play();
-            if (blackoutImage != null) StartCoroutine(BlinkEffect());
+            // Play the two distinct scary noises
+            if (strikeAudioSource != null)
+            {
+                if (deathBellClip != null) strikeAudioSource.PlayOneShot(deathBellClip);
+                if (heartbeatClip != null) strikeAudioSource.PlayOneShot(heartbeatClip);
+            }
+            
+            if (blackoutImage != null) StartCoroutine(BlinkEffect(caller));
         }
     }
 
-    private IEnumerator BlinkEffect()
+    // ---> REWRITTEN: Flashes the specific monster on top of the black screen <---
+    private IEnumerator BlinkEffect(CallerData caller)
     {
         blackoutImage.gameObject.SetActive(true);
-        Color c = blackoutImage.color;
+        
+        // Prep the monster image if this caller has one!
+        if (monsterPulseImage != null && caller != null && caller.monsterSprite != null)
+        {
+            monsterPulseImage.sprite = caller.monsterSprite;
+            monsterPulseImage.gameObject.SetActive(true);
+        }
+
+        Color blackoutColor = blackoutImage.color;
+        Color monsterColor = monsterPulseImage != null ? monsterPulseImage.color : Color.clear;
 
         for (int i = 0; i < blinkCount; i++)
         {
-            // Fade to black (0.9f keeps it just barely transparent for panic)
-            while (c.a < 0.9f) 
+            // Fade IN
+            while (blackoutColor.a < 0.9f) 
             {
-                c.a += Time.deltaTime * blinkSpeed;
-                blackoutImage.color = c;
+                float speed = Time.deltaTime * blinkSpeed;
+                blackoutColor.a += speed;
+                monsterColor.a += speed; // Fade the monster in with the black screen!
+                
+                blackoutImage.color = blackoutColor;
+                if (monsterPulseImage != null) monsterPulseImage.color = monsterColor;
+                
                 yield return null;
             }
-            // Fade back to clear
-            while (c.a > 0f)
+            
+            // Fade OUT
+            while (blackoutColor.a > 0f)
             {
-                c.a -= Time.deltaTime * blinkSpeed;
-                blackoutImage.color = c;
+                float speed = Time.deltaTime * blinkSpeed;
+                blackoutColor.a -= speed;
+                monsterColor.a -= speed;
+                
+                blackoutImage.color = blackoutColor;
+                if (monsterPulseImage != null) monsterPulseImage.color = monsterColor;
+                
                 yield return null;
             }
         }
         
-        // Ensure it is perfectly invisible when done
-        c.a = 0f;
-        blackoutImage.color = c;
+        // Reset everything to invisible
+        blackoutColor.a = 0f;
+        monsterColor.a = 0f;
+        blackoutImage.color = blackoutColor;
         blackoutImage.gameObject.SetActive(false);
+        
+        if (monsterPulseImage != null) 
+        {
+            monsterPulseImage.color = monsterColor;
+            monsterPulseImage.gameObject.SetActive(false);
+        }
     }
     
     public void ShowGameOver()

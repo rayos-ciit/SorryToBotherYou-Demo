@@ -18,21 +18,23 @@ public class RulebookController : MonoBehaviour
     public AudioClip pageFlipClip;
 
     [Header("Audio Muffling Sabotage")]
-    public AudioSource ambientAudioSource;
-    public AudioSource phoneAudioSource;
+    [Tooltip("Drag ANY audio source here that you want to muffle when reading.")]
+    public AudioSource[] sourcesToMuffle; 
     [Range(0f, 1f)] public float muffledVolumeLevel = 0.2f;
 
-    private float originalAmbientVol;
-    private float originalPhoneVol;
+    private float[] originalVolumes;
     private bool isBookOpen = false;
     private int currentPageIndex = 0;
 
     void Start()
     {
-        if (ambientAudioSource != null) originalAmbientVol = ambientAudioSource.volume;
-        if (phoneAudioSource != null) originalPhoneVol = phoneAudioSource.volume;
+        // Save the original volume of every audio source in the list
+        originalVolumes = new float[sourcesToMuffle.Length];
+        for (int i = 0; i < sourcesToMuffle.Length; i++)
+        {
+            if (sourcesToMuffle[i] != null) originalVolumes[i] = sourcesToMuffle[i].volume;
+        }
         
-        // Ensure the game starts with the UI closed and the desk item visible
         rulebookCanvas.SetActive(false);
         if (deskRulebookIcon != null) deskRulebookIcon.SetActive(true);
     }
@@ -42,32 +44,30 @@ public class RulebookController : MonoBehaviour
     {
         isBookOpen = !isBookOpen;
         
-        // 1. Toggle UI and Desk Icon Visiblity
         rulebookCanvas.SetActive(isBookOpen);
         if (deskRulebookIcon != null) deskRulebookIcon.SetActive(!isBookOpen);
         
-        // 2. Handle Opening the Book
         if (isBookOpen)
         {
             currentPageIndex = 0;
             UpdatePageVisibility();
-            
-            // Play Open Sound
             if (uiFoleySource != null && bookOpenClip != null) uiFoleySource.PlayOneShot(bookOpenClip);
             
-            // Muffle Background Audio
-            if (ambientAudioSource != null) ambientAudioSource.volume = originalAmbientVol * muffledVolumeLevel;
-            if (phoneAudioSource != null) phoneAudioSource.volume = originalPhoneVol * muffledVolumeLevel;
+            // MUFFLE EVERYTHING!
+            for (int i = 0; i < sourcesToMuffle.Length; i++)
+            {
+                if (sourcesToMuffle[i] != null) sourcesToMuffle[i].volume = originalVolumes[i] * muffledVolumeLevel;
+            }
         }
-        // 3. Handle Closing the Book
         else 
         {
-            // Play Close Sound
             if (uiFoleySource != null && bookCloseClip != null) uiFoleySource.PlayOneShot(bookCloseClip);
             
-            // Restore Background Audio
-            if (ambientAudioSource != null) ambientAudioSource.volume = originalAmbientVol;
-            if (phoneAudioSource != null) phoneAudioSource.volume = originalPhoneVol;
+            // RESTORE EVERYTHING!
+            for (int i = 0; i < sourcesToMuffle.Length; i++)
+            {
+                if (sourcesToMuffle[i] != null) sourcesToMuffle[i].volume = originalVolumes[i];
+            }
         }
     }
 

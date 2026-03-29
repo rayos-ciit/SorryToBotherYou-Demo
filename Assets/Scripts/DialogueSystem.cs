@@ -96,6 +96,7 @@ public class DialogueSystem : MonoBehaviour
     {
         StopAllCoroutines();
         isTyping = false;
+        if (voiceAudioSource != null) voiceAudioSource.Stop();
         if (dialogueBoxUI != null) dialogueBoxUI.SetActive(false);
     }
 }

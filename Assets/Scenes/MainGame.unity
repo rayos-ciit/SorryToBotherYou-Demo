@@ -218,6 +218,7 @@ RectTransform:
   - {fileID: 346827283}
   - {fileID: 532014893}
   - {fileID: 1585510107}
+  - {fileID: 1723395521}
   - {fileID: 272040837}
   - {fileID: 1879298577}
   - {fileID: 1157874890}
@@ -5760,6 +5761,7 @@ MonoBehaviour:
   uiManager: {fileID: 1320293895}
   phoneController: {fileID: 532014896}
   computerController: {fileID: 590309926}
+  globalAmbienceSource: {fileID: 1480416625}
   currentDay: 1
   minCallsPerDay: 5
   maxCallsPerDay: 8
@@ -5772,8 +5774,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e7f41ac0d548d424383c7a07d1d267d2, type: 2}
   - {fileID: 11400000, guid: d13594900b215e54dac4c87a6900c9c5, type: 2}
   - {fileID: 11400000, guid: 3588296b507fe9b4bb892ed38e252947, type: 2}
-  debugForceType: 0
-  debugForcedType: 1
+  debugForceType: 1
+  debugForcedType: 0
 --- !u!4 &1247691766
 Transform:
   m_ObjectHideFlags: 0
@@ -6269,9 +6271,12 @@ MonoBehaviour:
   callerIDContainer: {fileID: 469823095}
   digitalClockText: {fileID: 272040838}
   strikeAudioSource: {fileID: 1320293897}
+  deathBellClip: {fileID: 8300000, guid: 728c8f607499f8f4aa9b8aef6caf49e1, type: 3}
+  heartbeatClip: {fileID: 0}
   blackoutImage: {fileID: 1585510108}
   blinkSpeed: 5
   blinkCount: 2
+  monsterPulseImage: {fileID: 1723395519}
   victoryAlarmAudio: {fileID: 1320293898}
   jumpscareAudio: {fileID: 1320293899}
   bossFaceImage: {fileID: 636704470}
@@ -8037,8 +8042,11 @@ MonoBehaviour:
   bookOpenClip: {fileID: 8300000, guid: dab5c92d29f619f419d14586e3d7bd15, type: 3}
   bookCloseClip: {fileID: 8300000, guid: 7c6c4cff91d5da74cb705abb8379a711, type: 3}
   pageFlipClip: {fileID: 8300000, guid: 0cbc0103c5fd1ad48ab9d5e7ed5b3238, type: 3}
-  ambientAudioSource: {fileID: 1480416625}
-  phoneAudioSource: {fileID: 312826378}
+  sourcesToMuffle:
+  - {fileID: 1480416625}
+  - {fileID: 312826378}
+  - {fileID: 1953621134}
+  - {fileID: 582176631}
   muffledVolumeLevel: 0.2
 --- !u!4 &1591437022
 Transform:
@@ -8701,6 +8709,81 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1700837545}
   m_CullTransparentMesh: 1
+--- !u!1 &1723395518
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1723395521}
+  - component: {fileID: 1723395520}
+  - component: {fileID: 1723395519}
+  m_Layer: 5
+  m_Name: MonsterImage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1723395519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1723395518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1723395520
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1723395518}
+  m_CullTransparentMesh: 1
+--- !u!224 &1723395521
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1723395518}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8355990}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0.00030518, y: -0.000030517578}
+  m_SizeDelta: {x: 1920, y: 1080.4}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1748368401
 GameObject:
   m_ObjectHideFlags: 0

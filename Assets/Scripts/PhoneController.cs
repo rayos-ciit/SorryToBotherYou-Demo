@@ -51,14 +51,6 @@ public class PhoneController : MonoBehaviour
             phoneAudioSource.Play();
         }
 
-        // 3. Start Environmental Dread (if applicable)
-        if (caller.ambientSFX != null && extraAmbientSource != null)
-        {
-            extraAmbientSource.clip = caller.ambientSFX;
-            extraAmbientSource.loop = true;
-            extraAmbientSource.Play();
-        }
-
         // 4. Start the Ring Timer (Use their specific limit, or fallback to the global SLA limit)
         float ringTime = caller.timeLimitToRespond > 0 ? caller.timeLimitToRespond : slaTimeLimit;
         RestartSLA(RingTimeoutRoutine(ringTime));

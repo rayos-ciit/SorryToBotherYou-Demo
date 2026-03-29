@@ -9,6 +9,10 @@ public class GameManager : MonoBehaviour
     public PhoneController phoneController;
     public ComputerController computerController;
     
+    // ---> NEW: The Room Atmosphere <---
+    [Header("Atmosphere")]
+    public AudioSource globalAmbienceSource; 
+
     [Header("Shift Settings")]
     public int currentDay = 1;
     public int minCallsPerDay = 5, maxCallsPerDay = 8;
@@ -28,8 +32,10 @@ public class GameManager : MonoBehaviour
 
     void Start() 
     { 
-        // Do nothing! Let the player read the rulebook.
         Debug.Log("Pre-shift phase. Waiting for player to clock in...");
+        
+        // ---> NEW: Start the aircon immediately when the scene loads!
+        if (globalAmbienceSource != null) globalAmbienceSource.Play(); 
     }
 
     public void StartShift()
@@ -53,9 +59,10 @@ public class GameManager : MonoBehaviour
             if (computerController != null) yield return new WaitUntil(() => !computerController.isRebooting);
 
             // One line selection checking for debug!
+            CallerData pulledCaller = PullCallerFromDeck();
             activeCaller = debugForceType 
-                ? availableCallers.Find(c => c.typeOfCaller == debugForcedType) ?? PullCallerFromDeck()
-                : PullCallerFromDeck();
+                ? (availableCallers.Find(c => c.typeOfCaller == debugForcedType) ?? pulledCaller)
+                : pulledCaller;
 
             callInProgress = true;
             phoneController?.StartRinging(activeCaller);
@@ -76,8 +83,18 @@ public class GameManager : MonoBehaviour
         if (!success)
         {
             currentStrikes++;
-            uiManager?.UpdateStrikes(currentStrikes);
-            if (currentStrikes >= maxStrikesAllowed) { uiManager?.ShowGameOver(); StopAllCoroutines(); }
+            
+            // ---> NEW: Pass the activeCaller to the UIManager so it knows who to flash!
+            uiManager?.UpdateStrikes(currentStrikes, activeCaller);
+            
+            if (currentStrikes >= maxStrikesAllowed) 
+            { 
+                // ---> NEW: Kill the aircon hum for pure silence before the Boss hits!
+                if (globalAmbienceSource != null) globalAmbienceSource.Stop(); 
+                
+                uiManager?.ShowGameOver(); 
+                StopAllCoroutines(); 
+            }
         }
 
         callInProgress = false;

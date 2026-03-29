@@ -33,6 +33,7 @@ public class CallerData : ScriptableObject
     public AudioClip voiceSFX;
     public AudioClip ambientSFX;
     public bool causesScreenFlicker = false;
+    public Sprite monsterSprite;
 
     [Header("Dialogue Variations")]
     public List<DialogueVariation> dialogueVariations;
