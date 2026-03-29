@@ -22,5 +22,7 @@ MonoBehaviour:
   timeLimitToRespond: 5
   ringSFX: {fileID: 8300000, guid: 36eff18ea844c2a4e983f382d0bb709e, type: 3}
   voiceSFX: {fileID: 0}
+  ambientSFX: {fileID: 8300000, guid: 9e7b2bd54ea04fa44b28e2dc4fb615ed, type: 3}
   causesScreenFlicker: 0
+  monsterSprite: {fileID: -2349780220322161311, guid: f02a9d122c8b2504684475e2c5027f83, type: 3}
   dialogueVariations: []

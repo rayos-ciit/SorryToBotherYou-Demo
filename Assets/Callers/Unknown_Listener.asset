@@ -22,7 +22,9 @@ MonoBehaviour:
   timeLimitToRespond: 0
   ringSFX: {fileID: 8300000, guid: 7119e83e83291844f93eae3e67d4b10d, type: 3}
   voiceSFX: {fileID: 0}
+  ambientSFX: {fileID: 0}
   causesScreenFlicker: 0
+  monsterSprite: {fileID: -3755199225860798601, guid: 3751fc309431f0f4987633ec08eafd90, type: 3}
   dialogueVariations:
   - lines:
     - '"Hello... it''s so nice to hear another human voice."'

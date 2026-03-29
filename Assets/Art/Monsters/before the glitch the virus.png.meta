@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 3751fc309431f0f4987633ec08eafd90
+guid: a23a7fa22baa9b84c92681df862db72f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3755199225860798601
-    second: the listener_0
+      213: -3303593980412479258
+    second: before the glitch the virus_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,7 +113,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: the listener_0
+      name: before the glitch the virus_0
       rect:
         serializedVersion: 2
         x: 0
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 777ceb1333ad2ebc0800000000000000
-      internalID: -3755199225860798601
+      spriteID: 6e8356b27c64722d0800000000000000
+      internalID: -3303593980412479258
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      the listener_0: -3755199225860798601
+      before the glitch the virus_0: -3303593980412479258
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

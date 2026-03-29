@@ -22,7 +22,9 @@ MonoBehaviour:
   timeLimitToRespond: 7
   ringSFX: {fileID: 8300000, guid: 36eff18ea844c2a4e983f382d0bb709e, type: 3}
   voiceSFX: {fileID: 8300000, guid: 36fa7844cfafc5743964687a63462fe9, type: 3}
-  causesScreenFlicker: 0
+  ambientSFX: {fileID: 0}
+  causesScreenFlicker: 1
+  monsterSprite: {fileID: -1846702766222976758, guid: 4c3c2dca5f6e2744e8f985a4a85a0daf, type: 3}
   dialogueVariations:
   - lines:
     - '"Finally! Do you have any idea how long I''ve been waiting to get through?!"'

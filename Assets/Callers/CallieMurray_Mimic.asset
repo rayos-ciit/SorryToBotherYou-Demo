@@ -22,7 +22,9 @@ MonoBehaviour:
   timeLimitToRespond: 7
   ringSFX: {fileID: 8300000, guid: 7119e83e83291844f93eae3e67d4b10d, type: 3}
   voiceSFX: {fileID: 8300000, guid: 5addf9ba1a1eefb4089cfd5b54eb6f37, type: 3}
+  ambientSFX: {fileID: 0}
   causesScreenFlicker: 0
+  monsterSprite: {fileID: 8740687447515818991, guid: d2b3d00086b305e4e93c367873f9ddd8, type: 3}
   dialogueVariations:
   - lines:
     - '"Hello. We have been trying to reach you regarding your car''s extended warranty."'

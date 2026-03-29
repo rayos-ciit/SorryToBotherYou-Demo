@@ -84,16 +84,17 @@ public class GameManager : MonoBehaviour
         {
             currentStrikes++;
             
-            // ---> NEW: Pass the activeCaller to the UIManager so it knows who to flash!
-            uiManager?.UpdateStrikes(currentStrikes, activeCaller);
-            
             if (currentStrikes >= maxStrikesAllowed) 
             { 
-                // ---> NEW: Kill the aircon hum for pure silence before the Boss hits!
+                // FATAL STRIKE: Boss Jumpscare ONLY!
                 if (globalAmbienceSource != null) globalAmbienceSource.Stop(); 
-                
                 uiManager?.ShowGameOver(); 
                 StopAllCoroutines(); 
+            }
+            else
+            {
+                // SURVIVABLE STRIKE: Flash the caller and play heartbeat
+                uiManager?.UpdateStrikes(currentStrikes, activeCaller);
             }
         }
 
