@@ -31,6 +31,7 @@ public class CallerData : ScriptableObject
     [Header("Audio & Visuals")]
     public AudioClip ringSFX;
     public AudioClip voiceSFX;
+    public AudioClip ambientSFX;
     public bool causesScreenFlicker = false;
 
     [Header("Dialogue Variations")]

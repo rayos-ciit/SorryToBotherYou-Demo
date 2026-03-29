@@ -3,42 +3,47 @@ using UnityEngine;
 
 public class PhoneController : MonoBehaviour
 {
-    [Header("Connections")]
+    [Header("Core Systems")]
     public GameManager gameManager;
-    public UIManager uiManager;
     public DialogueSystem dialogueSystem;
+    public UIManager uiManager;
 
     [Header("Audio Sources")]
     public AudioSource phoneAudioSource;
     public AudioSource voiceAudioSource;
-    
-    [Header("Phone Foley & Music")] 
+    public AudioSource extraAmbientSource;
+
+    [Header("Phone Foley & Music")]
     public AudioClip pickUpClip;
     public AudioClip hangUpClip;
     public AudioClip holdMusicClip;
+    public AudioClip holdButtonClip;
+    public AudioClip talkButtonClip;
 
-    
-    [Header("Call Logic")]
-    public float slaTimeLimit = 50.0f;
-    
-    public bool isRinging { get; private set; }
-    public bool isOffHook { get; private set; }
-    public bool isOnHold { get; private set; }
+    [Header("Shift Settings")]
+    public float slaTimeLimit = 50f;
+    public float holdTimeLimit = 15f;
 
-    public CallerData currentCaller { get; private set; }
+    [HideInInspector] public bool isRinging = false;
+    [HideInInspector] public bool isOffHook = false;
+    [HideInInspector] public bool isOnHold = false;
+
+    private CallerData currentCaller;
     private Coroutine slaRoutine;
 
     public void StartRinging(CallerData caller)
     {
         currentCaller = caller;
         isRinging = true;
-        
+
         uiManager?.SetPhoneVisualOnBase();
 
+        // 1. Scramble the UI if necessary
         string cName = (caller.canMaskCallerID && Random.value > 0.5f) ? "UNKNOWN" : caller.callerName;
         string cNum  = (caller.canMaskCallerID && Random.value > 0.5f) ? "UNKNOWN" : caller.callerNumber;
         uiManager?.UpdateCallerID(cName, cNum);
 
+        // 2. Play the Specific Ringtone
         if (caller.ringSFX != null && phoneAudioSource != null)
         {
             phoneAudioSource.clip = caller.ringSFX;
@@ -46,26 +51,17 @@ public class PhoneController : MonoBehaviour
             phoneAudioSource.Play();
         }
 
-        // ---> THE STREAMLINED FIX <---
-        // If the caller has a specific limit (like Karen's 7s), use it. 
-        // If it is 0 (like John), use the global SLA Timer!
+        // 3. Start Environmental Dread (if applicable)
+        if (caller.ambientSFX != null && extraAmbientSource != null)
+        {
+            extraAmbientSource.clip = caller.ambientSFX;
+            extraAmbientSource.loop = true;
+            extraAmbientSource.Play();
+        }
+
+        // 4. Start the Ring Timer (Use their specific limit, or fallback to the global SLA limit)
         float ringTime = caller.timeLimitToRespond > 0 ? caller.timeLimitToRespond : slaTimeLimit;
         RestartSLA(RingTimeoutRoutine(ringTime));
-    }
-
-    private IEnumerator RingTimeoutRoutine(float timeLimit)
-    {
-        yield return new WaitForSeconds(timeLimit);
-        if (!isRinging) yield break; // If they already answered, kill the timer
-
-        Debug.Log("The phone stopped ringing.");
-        isRinging = false;
-        phoneAudioSource?.Stop();
-        
-        // Consolidating the win/loss check into two lines!
-        bool success = currentCaller.requiredAction == CorrectAction.Ignore;
-        Debug.Log(success ? "Successfully ignored!" : "Missed a valid call! STRIKE!");
-        gameManager?.ResolveCall(success);
     }
 
     public void PickUpPhone()
@@ -74,54 +70,59 @@ public class PhoneController : MonoBehaviour
 
         isRinging = false;
         isOffHook = true;
-        phoneAudioSource?.Stop(); 
         
+        // 1. Stop the ring and play the plastic pick-up click
+        phoneAudioSource?.Stop();
         if (pickUpClip != null && phoneAudioSource != null) phoneAudioSource.PlayOneShot(pickUpClip);
-        
-        RestartSLA(SLATimerRoutine(slaTimeLimit)); 
 
-        Debug.Log("Picked up the receiver.");
         uiManager?.SetPhoneVisualOffHook();
-        gameManager?.computerController?.OnPhonePickedUp();
+        RestartSLA(SLATimerRoutine(slaTimeLimit));
 
-        if (currentCaller.requiredAction == CorrectAction.Ignore)
+        // 2. The Disturbance Jumpscare Trap!
+        if (currentCaller != null && currentCaller.typeOfCaller == CallerType.Disturbance)
         {
-            Debug.Log("You answered a Disturbance! STRIKE!");
-            if (currentCaller.voiceSFX != null) voiceAudioSource?.PlayOneShot(currentCaller.voiceSFX); 
+            Debug.Log("Picked up a Disturbance! Strike!");
+            if (currentCaller.voiceSFX != null && voiceAudioSource != null)
+            {
+                voiceAudioSource.PlayOneShot(currentCaller.voiceSFX);
+            }
             gameManager?.ResolveCall(false);
             return;
         }
 
-        if (currentCaller.typeOfCaller == CallerType.Mimic)
-            Debug.Log("It's a MIMIC! You have until the dialogue finishes to hang up!");
-
-        dialogueSystem?.StartDialogue(currentCaller);
+        // 3. If it's a normal call, start the text
+        if (currentCaller != null)
+        {
+            dialogueSystem?.StartDialogue(currentCaller);
+        }
     }
 
     public void HoldPhone()
     {
         if (!isOffHook || isOnHold) return;
 
+        // Play the physical button sound
+        if (holdButtonClip != null && phoneAudioSource != null) phoneAudioSource.PlayOneShot(holdButtonClip);
+
         Debug.Log("Call placed on hold.");
         isOnHold = true;
         dialogueSystem?.StopDialogue();
-        
+
+        // Start the elevator music over the receiver
         if (holdMusicClip != null && phoneAudioSource != null)
         {
             phoneAudioSource.clip = holdMusicClip;
             phoneAudioSource.loop = true;
             phoneAudioSource.Play();
         }
-        
-        StartCoroutine(WaitToResolveHold());
+
+        RestartSLA(WaitToResolveHold());
     }
 
-    private IEnumerator WaitToResolveHold()
+    public void PlayTalkButtonSound()
     {
-        yield return new WaitForSeconds(2.0f);
-        bool success = currentCaller?.requiredAction == CorrectAction.Hold;
-        Debug.Log(success ? "Successfully placed on hold!" : "Invalid hold! STRIKE!");
-        gameManager?.ResolveCall(success);
+        // Tied strictly to the physical UI button!
+        if (talkButtonClip != null && phoneAudioSource != null) phoneAudioSource.PlayOneShot(talkButtonClip);
     }
 
     public void HangUpPhone()
@@ -130,41 +131,73 @@ public class PhoneController : MonoBehaviour
 
         Debug.Log("Player slammed the phone down.");
         if (voiceAudioSource != null) voiceAudioSource.loop = false;
-        
-        if (hangUpClip != null && phoneAudioSource != null) phoneAudioSource.PlayOneShot(hangUpClip);
 
-        bool success = currentCaller?.requiredAction == CorrectAction.HangUp;
+        bool success = currentCaller != null && currentCaller.requiredAction == CorrectAction.HangUp;
         Debug.Log(success ? "Successfully disconnected!" : "Hung up on valid client! STRIKE!");
+        
+        // The GameManager will officially trigger the audio reset when resolving this!
         gameManager?.ResolveCall(success);
+    }
+
+    public void ResetPhoneState()
+    {
+        // 1. Remember if the player was holding the phone
+        bool wasOffHook = isOffHook;
+
+        // 2. Reset the logic
+        isRinging = isOffHook = isOnHold = false;
+        dialogueSystem?.StopDialogue();
+        if (slaRoutine != null) StopCoroutine(slaRoutine);
+        
+        // 3. MURDER ALL LOOPING AUDIO!
+        voiceAudioSource?.Stop();
+        phoneAudioSource?.Stop();
+        extraAmbientSource?.Stop();
+
+        // 4. Safely play the plastic hang-up click ONLY if it was held previously
+        if (wasOffHook && hangUpClip != null && phoneAudioSource != null)
+        {
+            phoneAudioSource.PlayOneShot(hangUpClip);
+        }
+
+        // 5. Restore visuals
+        uiManager?.SetPhoneVisualOnBase();
+    }
+
+    // --- COROUTINE TIMERS --- //
+
+    private void RestartSLA(IEnumerator routine)
+    {
+        if (slaRoutine != null) StopCoroutine(slaRoutine);
+        slaRoutine = StartCoroutine(routine);
+    }
+
+    private IEnumerator RingTimeoutRoutine(float limit)
+    {
+        yield return new WaitForSeconds(limit);
+        if (isRinging)
+        {
+            Debug.Log("Missed call! STRIKE!");
+            gameManager?.ResolveCall(false);
+        }
     }
 
     private IEnumerator SLATimerRoutine(float limit)
     {
         yield return new WaitForSeconds(limit);
-        Debug.Log("SLA Breach! You took too long.");
-        gameManager?.ResolveCall(false);
-    }
-
-    // Helper method to keep your routine stopping/starting clean
-    private void RestartSLA(IEnumerator newRoutine)
-    {
-        if (slaRoutine != null) StopCoroutine(slaRoutine);
-        slaRoutine = StartCoroutine(newRoutine);
-    }
-
-    public void ResetPhoneState()
-    {
-        if (isOffHook && hangUpClip != null && phoneAudioSource != null) 
+        if (isOffHook)
         {
-            phoneAudioSource.PlayOneShot(hangUpClip);
+            Debug.Log("Took too long to respond! SLA Breach! STRIKE!");
+            gameManager?.ResolveCall(false);
         }
-        isRinging = isOffHook = isOnHold = false;
-        
-        dialogueSystem?.StopDialogue();
-        if (slaRoutine != null) StopCoroutine(slaRoutine); 
-        voiceAudioSource?.Stop();
-        phoneAudioSource?.Stop();
-        
-        uiManager?.SetPhoneVisualOnBase();
+    }
+
+    private IEnumerator WaitToResolveHold()
+    {
+        yield return new WaitForSeconds(holdTimeLimit);
+
+        bool success = currentCaller != null && currentCaller.requiredAction == CorrectAction.Hold;
+        Debug.Log(success ? "Successfully kept Listener on hold." : "Held a valid client! STRIKE!");
+        gameManager?.ResolveCall(success);
     }
 }

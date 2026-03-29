@@ -48,6 +48,13 @@ public class DialogueSystem : MonoBehaviour
 
     public void DisplayNextLine()
     {
+        // ---> THE FIX: Block the Talk button if the phone is on hold <---
+        if (phoneController != null && phoneController.isOnHold)
+        {
+            Debug.Log("Cannot talk while the caller is on hold!");
+            return;
+        }
+
         if (isTyping) { isTyping = false; return; } // Simple skip logic
 
         currentLineIndex++;
@@ -81,7 +88,6 @@ public class DialogueSystem : MonoBehaviour
     private void EndDialogue()
     {
         dialogueBoxUI.SetActive(false);
-        phoneController.ResetPhoneState();
         // Just report back to GameManager
         gameManager.ResolveCall(gameManager.activeCaller.requiredAction == CorrectAction.Talk);
     }
