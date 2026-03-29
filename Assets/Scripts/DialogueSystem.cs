@@ -40,6 +40,8 @@ public class DialogueSystem : MonoBehaviour
         currentLineIndex = 0;
         useScrambler = !disableScrambler && (caller.typeOfCaller == CallerType.Mimic || caller.typeOfCaller == CallerType.Virus);
         
+        if (voiceAudioSource != null) voiceAudioSource.clip = caller.voiceSFX;
+
         dialogueBoxUI.SetActive(true);
         StartCoroutine(TypeSentence(currentLines[0]));
     }
@@ -57,14 +59,23 @@ public class DialogueSystem : MonoBehaviour
     {
         dialogueText.text = "";
         isTyping = true;
+
+        // ---> NEW: Start playing their voice clip! <---
+        if (voiceAudioSource != null && voiceAudioSource.clip != null) voiceAudioSource.Play();
+
         foreach (char letter in sentence)
         {
             if (!isTyping) { dialogueText.text = sentence; break; } // Skip typing
             dialogueText.text += letter;
-            voiceAudioSource?.PlayOneShot(voiceAudioSource.clip);
+            
+            // (The PlayOneShot blip was deleted from right here!)
+            
             yield return new WaitForSeconds(typingSpeed);
         }
         isTyping = false;
+
+        // ---> NEW: Stop playing their voice once the text finishes typing! <---
+        if (voiceAudioSource != null) voiceAudioSource.Stop();
     }
 
     private void EndDialogue()

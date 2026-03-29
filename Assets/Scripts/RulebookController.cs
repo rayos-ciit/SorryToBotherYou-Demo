@@ -5,7 +5,6 @@ public class RulebookController : MonoBehaviour
     [Header("UI Elements")]
     public GameObject rulebookCanvas;
     
-    // NEW: The physical book sitting on the desk!
     [Tooltip("Drag the GameObject representing the closed book on your desk here.")]
     public GameObject deskRulebookIcon; 
     
@@ -15,6 +14,7 @@ public class RulebookController : MonoBehaviour
     [Header("Tactile UI Sounds")]
     public AudioSource uiFoleySource;
     public AudioClip bookOpenClip;
+    public AudioClip bookCloseClip; // <--- The missing close clip variable!
     public AudioClip pageFlipClip;
 
     [Header("Audio Muffling Sabotage")]
@@ -37,32 +37,35 @@ public class RulebookController : MonoBehaviour
         if (deskRulebookIcon != null) deskRulebookIcon.SetActive(true);
     }
 
+    // ---> THE CLEANLY REWRITTEN TOGGLE FUNCTION <---
     public void ToggleRulebook()
     {
         isBookOpen = !isBookOpen;
+        
+        // 1. Toggle UI and Desk Icon Visiblity
         rulebookCanvas.SetActive(isBookOpen);
+        if (deskRulebookIcon != null) deskRulebookIcon.SetActive(!isBookOpen);
         
-        // NEW: Hide the desk book if the UI is open, and show it if the UI is closed!
-        if (deskRulebookIcon != null)
-        {
-            deskRulebookIcon.SetActive(!isBookOpen);
-        }
-        
+        // 2. Handle Opening the Book
         if (isBookOpen)
         {
-            // Always open to the first page
             currentPageIndex = 0;
-            if (uiFoleySource != null && bookOpenClip != null) 
-            {
-                uiFoleySource.PlayOneShot(bookOpenClip);
-            }
             UpdatePageVisibility();
             
+            // Play Open Sound
+            if (uiFoleySource != null && bookOpenClip != null) uiFoleySource.PlayOneShot(bookOpenClip);
+            
+            // Muffle Background Audio
             if (ambientAudioSource != null) ambientAudioSource.volume = originalAmbientVol * muffledVolumeLevel;
             if (phoneAudioSource != null) phoneAudioSource.volume = originalPhoneVol * muffledVolumeLevel;
         }
-        else
+        // 3. Handle Closing the Book
+        else 
         {
+            // Play Close Sound
+            if (uiFoleySource != null && bookCloseClip != null) uiFoleySource.PlayOneShot(bookCloseClip);
+            
+            // Restore Background Audio
             if (ambientAudioSource != null) ambientAudioSource.volume = originalAmbientVol;
             if (phoneAudioSource != null) phoneAudioSource.volume = originalPhoneVol;
         }

@@ -20,7 +20,7 @@ MonoBehaviour:
   requiredAction: 2
   requiresQuickResponse: 0
   timeLimitToRespond: 0
-  ringSFX: {fileID: 0}
+  ringSFX: {fileID: 8300000, guid: 36eff18ea844c2a4e983f382d0bb709e, type: 3}
   voiceSFX: {fileID: 0}
   causesScreenFlicker: 1
   dialogueVariations:

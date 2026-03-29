@@ -11,7 +11,13 @@ public class PhoneController : MonoBehaviour
     [Header("Audio Sources")]
     public AudioSource phoneAudioSource;
     public AudioSource voiceAudioSource;
+    
+    [Header("Phone Foley & Music")] 
+    public AudioClip pickUpClip;
+    public AudioClip hangUpClip;
+    public AudioClip holdMusicClip;
 
+    
     [Header("Call Logic")]
     public float slaTimeLimit = 50.0f;
     
@@ -70,6 +76,8 @@ public class PhoneController : MonoBehaviour
         isOffHook = true;
         phoneAudioSource?.Stop(); 
         
+        if (pickUpClip != null && phoneAudioSource != null) phoneAudioSource.PlayOneShot(pickUpClip);
+        
         RestartSLA(SLATimerRoutine(slaTimeLimit)); 
 
         Debug.Log("Picked up the receiver.");
@@ -98,6 +106,13 @@ public class PhoneController : MonoBehaviour
         isOnHold = true;
         dialogueSystem?.StopDialogue();
         
+        if (holdMusicClip != null && phoneAudioSource != null)
+        {
+            phoneAudioSource.clip = holdMusicClip;
+            phoneAudioSource.loop = true;
+            phoneAudioSource.Play();
+        }
+        
         StartCoroutine(WaitToResolveHold());
     }
 
@@ -115,6 +130,8 @@ public class PhoneController : MonoBehaviour
 
         Debug.Log("Player slammed the phone down.");
         if (voiceAudioSource != null) voiceAudioSource.loop = false;
+        
+        if (hangUpClip != null && phoneAudioSource != null) phoneAudioSource.PlayOneShot(hangUpClip);
 
         bool success = currentCaller?.requiredAction == CorrectAction.HangUp;
         Debug.Log(success ? "Successfully disconnected!" : "Hung up on valid client! STRIKE!");
@@ -137,6 +154,10 @@ public class PhoneController : MonoBehaviour
 
     public void ResetPhoneState()
     {
+        if (isOffHook && hangUpClip != null && phoneAudioSource != null) 
+        {
+            phoneAudioSource.PlayOneShot(hangUpClip);
+        }
         isRinging = isOffHook = isOnHold = false;
         
         dialogueSystem?.StopDialogue();

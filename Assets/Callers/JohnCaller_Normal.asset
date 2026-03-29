@@ -20,8 +20,8 @@ MonoBehaviour:
   requiredAction: 0
   requiresQuickResponse: 0
   timeLimitToRespond: 0
-  ringSFX: {fileID: 0}
-  voiceSFX: {fileID: 0}
+  ringSFX: {fileID: 8300000, guid: 7119e83e83291844f93eae3e67d4b10d, type: 3}
+  voiceSFX: {fileID: 8300000, guid: 9ecb88c56cb57ca4dab84b981510be8d, type: 3}
   causesScreenFlicker: 0
   dialogueVariations:
   - lines:
